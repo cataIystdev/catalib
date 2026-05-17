@@ -1,0 +1,77 @@
+{
+  "steps": {
+    "environment": {
+      "python_version": "3.11.10 (main, May  7 2025, 15:43:52) [Clang 18.0.3 (https://android.googlesource.com/toolchain/llvm-project d8003a456",
+      "sys_platform": "linux",
+      "uname": {
+        "sysname": "Linux",
+        "release": "6.6.92-android15-8-g3637f4904cf5-ab13944661-4k",
+        "machine": "aarch64"
+      },
+      "executable": "/system/bin/app_process64",
+      "sdk_available": true
+    },
+    "module_identity": {
+      "name": "Catalib Probe",
+      "file": "/data/user/0/com.exteragram.messenger/files/plugins/catalib_probe.py",
+      "package": "",
+      "in_sys_modules": true,
+      "self_module_file": "/data/user/0/com.exteragram.messenger/files/plugins/catalib_probe.py"
+    },
+    "import_state": {
+      "sys_path": [
+        "/data/user/0/com.exteragram.messenger/files/remandre_modules/site-packages",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/kangelpluginsmanager-1.4.1",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/requests-2.34.2",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/charset-normalizer-3.4.7",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/idna-3.15",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/urllib3-2.7.0",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/certifi-2026.4.22",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/nowfy-1.4.66",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/ytmusicapi-1.12.0",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/yt-dlp-2026.3.17",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/musicbrainzngs-0.7.1",
+        "/data/user/0/com.exteragram.messenger/files/plugins/libs/cachetools-7.1.1",
+        "/data/data/com.exteragram.messenger/files/chaquopy/AssetFinder/app",
+        "/data/data/com.exteragram.messenger/files/chaquopy/AssetFinder/requirements",
+        "/data/data/com.exteragram.messenger/files/chaquopy/AssetFinder/stdlib-arm64-v8a",
+        "/data/user/0/com.exteragram.messenger/files/chaquopy/stdlib-common.imy",
+        "/data/user/0/com.exteragram.messenger/files/chaquopy/bootstrap.imy",
+        "/data/user/0/com.exteragram.messenger/files/chaquopy/bootstrap-native/arm64-v8a",
+        "/data/user/0/com.exteragram.messenger/files/chaquopy/plugins-sdk",
+        "/data/user/0/com.exteragram.messenger/files/plugins"
+      ],
+      "meta_path": [
+        "type",
+        "type",
+        "type"
+      ],
+      "path_hooks": [
+        "hook",
+        "ChaquopyZipImporter",
+        "path_hook_for_FileFinder"
+      ],
+      "related_modules": [
+        "catalib_probe"
+      ]
+    },
+    "meta_path_mechanism": {
+      "custom_finder_registered": true,
+      "synthetic_package_imported": true,
+      "relative_import_ok": true,
+      "traceback_points_to_synthetic": true,
+      "traceback_excerpt": [
+        "  File \"<catalib-probe:_catalib_probe_ns_pkg.sub>\", line 7, in boom",
+        "    raise ValueError('synthetic failure')",
+        "ValueError: synthetic failure"
+      ]
+    },
+    "filesystem": {
+      "plugins_dir": "/data/user/0/com.exteragram.messenger/files/plugins",
+      "files_dir": "/storage/emulated/0/Android/data/com.exteragram.messenger/files/exteraGram/exteraGram Files",
+      "write_dir": "/data/user/0/com.exteragram.messenger/files/plugins/catalib_probe_data",
+      "write_ok": true
+    }
+  },
+  "errors": {}
+}

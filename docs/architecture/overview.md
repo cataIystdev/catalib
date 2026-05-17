@@ -33,7 +33,9 @@ exteraGram в один самодостаточный файл `<plugin_id>.py`,
 5. `bundler.compiler` формирует выходной файл: литералы метаданных,
    встроенный загрузчик из `runtime`, встроенные исходники, экспорт точки входа.
 6. `manifest.metadata` статически (AST) проверяет корректность метаданных в выходе.
-7. `deploy` (опционально) кладёт файл на устройство и перезагружает плагин.
+7. `deploy` (опционально) доставляет файл на устройство через dev server
+   exteraGram (TCP 42690: `write_plugin` + `reload_plugin`) и перезагружает
+   плагин. Прямой `adb push` в приватный каталог без root запрещён (ADR-0004).
 
 ## Поток на устройстве
 
@@ -49,4 +51,5 @@ exteraGram в один самодостаточный файл `<plugin_id>.py`,
 - Связанные документы: [ADR-0001](decisions/ADR-0001-modulnyj-monolit.md),
   [ADR-0002](decisions/ADR-0002-bundler-meta-path.md),
   [ADR-0003](decisions/ADR-0003-mini-frejmvork-poverh-sdk.md),
+  [ADR-0004](decisions/ADR-0004-deploy-cherez-dev-server.md),
   [Implementation Plan](../plans/implementation-plan.md).
