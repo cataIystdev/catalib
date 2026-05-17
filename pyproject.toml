@@ -12,12 +12,16 @@ license = { file = "LICENSE" }
 authors = [{ name = "catalyst", email = "catalyst@raitokyokai.tech" }]
 keywords = ["exteragram", "telegram", "plugin", "bundler", "chaquopy"]
 classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
   "Environment :: Console",
   "Topic :: Software Development :: Build Tools",
+  "Topic :: Software Development :: Code Generators",
 ]
 dependencies = [
   "typer>=0.25,<1",
@@ -30,12 +34,19 @@ dev = [
   "pytest-cov>=6",
   "ruff>=0.9",
 ]
+publish = [
+  "build>=1.2",
+  "twine>=5",
+]
 
 [project.scripts]
 catalib = "catalib.cli.app:main"
 
 [project.urls]
-Documentation = "https://plugins.exteragram.app/docs"
+Homepage = "https://github.com/cataIystdev/catalib"
+Repository = "https://github.com/cataIystdev/catalib"
+Issues = "https://github.com/cataIystdev/catalib/issues"
+Changelog = "https://github.com/cataIystdev/catalib/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/catalib"]
