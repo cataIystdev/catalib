@@ -58,13 +58,25 @@ def _requirements_block(requirements: tuple[str, ...]) -> str:
 
 
 def _sources_block(manifest: PluginManifest, tree: SourceTree) -> str:
-    """Сформировать таблицу встроенных исходников и имя точки входа."""
+    """Сформировать таблицу встроенных исходников и имя точки входа.
+
+    Таблица включает модули плагина (под именами ``<plugin_id>.*``) и
+    вендоренные модули ``catalib.support`` (под их настоящими именами), так
+    как на устройстве пакет ``catalib`` не установлен.
+    """
+    from catalib.bundler.vendor import vendored_modules
+
     origins = build_source_map(manifest.id, tree)
     entries = []
     for module in tree.modules:
         fullname = runtime_fullname(manifest.id, module.relname)
         origin = origins[fullname]
         entries.append(f"    {fullname!r}: ({module.source!r}, {module.is_package!r}, {origin!r}),")
+    for module in vendored_modules():
+        origin = f"<catalib-vendor>/{module.relpath}"
+        entries.append(
+            f"    {module.relname!r}: ({module.source!r}, {module.is_package!r}, {origin!r}),"
+        )
     table = "_CATALIB_SOURCES = {\n" + "\n".join(entries) + "\n}\n"
     entry_fullname = runtime_fullname(manifest.id, tree.entry)
     table += f"_CATALIB_ENTRY = {entry_fullname!r}\n"

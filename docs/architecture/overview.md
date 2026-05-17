@@ -31,7 +31,8 @@ exteraGram в один самодостаточный файл `<plugin_id>.py`,
 3. `bundler.requirements` сливает `__requirements__`.
 4. `bundler.sourcemap` строит карту строк для трейсбеков.
 5. `bundler.compiler` формирует выходной файл: литералы метаданных,
-   встроенный загрузчик из `runtime`, встроенные исходники, экспорт точки входа.
+   встроенный загрузчик из `runtime`, встроенные исходники плагина и
+   вендоренные модули `catalib.support` (`bundler.vendor`), экспорт точки входа.
 6. `manifest.metadata` статически (AST) проверяет корректность метаданных в выходе.
 7. `deploy` (опционально) доставляет файл на устройство через dev server
    exteraGram (TCP 42690: `write_plugin` + `reload_plugin`) и перезагружает

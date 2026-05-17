@@ -40,29 +40,33 @@ def _iter_embeddable_files() -> list[Path]:
     return files
 
 
-def _imported_roots(source: str) -> set[str]:
+#: Подпакеты catalib, попадающие внутрь плагина (импорт между ними допустим).
+_EMBEDDABLE_CATALIB = {"support", "runtime"}
+
+
+def _imported_modules(source: str) -> set[str]:
+    """Полные имена модулей из абсолютных import/from-import."""
     tree = ast.parse(source)
-    roots: set[str] = set()
+    names: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                roots.add(alias.name.split(".")[0])
+            names.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
-            roots.add(node.module.split(".")[0])
-    return roots
+            names.add(node.module)
+    return names
 
 
 @pytest.mark.parametrize("path", _iter_embeddable_files(), ids=lambda p: p.name)
 def test_embeddable_module_imports_only_safe_roots(path: Path) -> None:
-    roots = _imported_roots(path.read_text(encoding="utf-8"))
-    for root in roots:
+    for module in _imported_modules(path.read_text(encoding="utf-8")):
+        parts = module.split(".")
+        root = parts[0]
         if root == "catalib":
-            pytest.fail(f"{path.name}: импорт инструментального пакета catalib запрещён")
+            # Допустим только встраиваемый периметр catalib.
+            if len(parts) == 1 or parts[1] in _EMBEDDABLE_CATALIB:
+                continue
+            pytest.fail(f"{path.name}: импорт инструментального модуля {module!r}")
         if root in _FORBIDDEN_TOOL_SUBPACKAGES:
             pytest.fail(f"{path.name}: импорт инструментального подпакета {root!r}")
-        allowed = (
-            root in sys.stdlib_module_names
-            or root in _SDK_ROOTS
-            or root == "catalib"  # обработано выше как ошибка
-        )
-        assert allowed, f"{path.name}: небезопасный импорт {root!r} во встраиваемом коде"
+        allowed = root in sys.stdlib_module_names or root in _SDK_ROOTS
+        assert allowed, f"{path.name}: небезопасный импорт {module!r} во встраиваемом коде"
