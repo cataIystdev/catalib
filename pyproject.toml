@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling>=1.29"]
+build-backend = "hatchling.build"
+
+[project]
+name = "catalib"
+version = "0.1.0"
+description = "Инструмент сборки модульных плагинов для exteraGram в один файл"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "catalyst", email = "catalyst@raitokyokai.tech" }]
+keywords = ["exteragram", "telegram", "plugin", "bundler", "chaquopy"]
+classifiers = [
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+  "Topic :: Software Development :: Build Tools",
+]
+dependencies = [
+  "typer>=0.25,<1",
+  "watchfiles>=1.1,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4",
+  "pytest-cov>=6",
+  "ruff>=0.9",
+]
+
+[project.scripts]
+catalib = "catalib.cli.app:main"
+
+[project.urls]
+Documentation = "https://plugins.exteragram.app/docs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/catalib"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/catalib", "README.md", "CHANGELOG.md", "LICENSE", "docs"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.pytest.ini_options]
+minversion = "8.4"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "integration: тесты, требующие внешних артефактов или подсистем",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src/catalib"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

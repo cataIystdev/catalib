@@ -1,0 +1,40 @@
+# Артефакты Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Виртуальные окружения
+.venv/
+venv/
+
+# Кеши инструментов
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Локальные секреты и окружение
+.env
+*.key
+*.pem
+
+# Системное и IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Логи и временные файлы
+*.log
+logs/
+
+# Большой бинарный артефакт exteraGram (используется только для исследования, не версионируется)
+exteraGram-beta-universal-*.apk
+
+# Выходные сборки плагинов в примерах
+examples/**/dist/

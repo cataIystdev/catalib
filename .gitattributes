@@ -1,0 +1,20 @@
+# Нормализация переводов строк: единый LF в репозитории
+* text=auto eol=lf
+
+# Явно текстовые типы
+*.py    text
+*.toml  text
+*.md    text
+*.cfg   text
+*.ini   text
+*.json  text
+*.yml   text
+*.yaml  text
+
+# Бинарные типы (не диффятся, не нормализуются)
+*.apk   binary
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+*.so    binary
+*.zip   binary
