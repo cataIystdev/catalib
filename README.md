@@ -43,6 +43,11 @@ GitBook через Git Sync).
 Внутренняя проектная документация (архитектура, ADR, планы) —
 в каталоге [docs/](docs/).
 
+## Автор
+
+catalyst. Плагины и новости — Telegram-канал
+[@catalystdevplugins](https://t.me/catalystdevplugins).
+
 ## Лицензия
 
 MIT. См. файл [LICENSE](LICENSE).

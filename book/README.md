@@ -55,3 +55,9 @@ my_plugin/
 
 Если что-то идёт не так — раздел [Решение проблем](troubleshooting.md)
 покрывает все известные подводные камни exteraGram.
+
+## Автор и контакты
+
+Автор — catalyst. Плагины, обновления и обратная связь — Telegram-канал
+[@catalystdevplugins](https://t.me/catalystdevplugins).
+Исходный код: [github.com/cataIystdev/catalib](https://github.com/cataIystdev/catalib).

@@ -48,6 +48,7 @@ Documentation = "https://raito-kyokai.gitbook.io/catalib"
 Repository = "https://github.com/cataIystdev/catalib"
 Issues = "https://github.com/cataIystdev/catalib/issues"
 Changelog = "https://github.com/cataIystdev/catalib/blob/main/CHANGELOG.md"
+Telegram = "https://t.me/catalystdevplugins"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/catalib"]
