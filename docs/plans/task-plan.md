@@ -287,7 +287,7 @@
 ## Раздел 7. Деплой
 
 ### T-060: ADB forward и клиент dev server
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `adb forward tcp:LOCAL tcp:42690`, минимальный JSON-клиент
   dev server (`ping`, `get_plugins`, `write_plugin`, `reload_plugin`,
   `set_plugin_enabled`, `delete_plugin`), проверка наличия `adb`, флаг
@@ -299,7 +299,7 @@
 - **Блокирует:** T-061, T-062.
 
 ### T-061: Деплой и перезагрузка плагина на устройстве
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `write_plugin` + `reload_plugin`, включение через
   `set_plugin_enabled` при первом деплое, понятные ошибки при выключенном
   dev server / закрытом приложении.
@@ -309,7 +309,7 @@
 - **Блокирует:** T-081.
 
 ### T-062: Unit-тесты деплоя
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** мок `subprocess`, разбор `adb devices`, ошибки.
 - **Артефакты:** `tests/unit/deploy/test_adb.py`,
   `tests/unit/deploy/test_reload.py`.
