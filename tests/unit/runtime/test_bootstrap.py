@@ -128,7 +128,11 @@ def test_stale_vendored_catalib_is_purged(import_cleanup: None) -> None:
             "<vp>/app.py",
         ),
         "catalib": ("", True, "<catalib-vendor>/catalib/__init__.py"),
-        "catalib.support": ('MARKER = "NEW"\n', True, "<catalib-vendor>/catalib/support/__init__.py"),
+        "catalib.support": (
+            'MARKER = "NEW"\n',
+            True,
+            "<catalib-vendor>/catalib/support/__init__.py",
+        ),
     }
     module = _install("vp", sources, "vp.app")
     assert module.P.VALUE == "NEW"
