@@ -1,5 +1,7 @@
 # catalib
 
+**Документация: [raito-kyokai.gitbook.io/catalib](https://raito-kyokai.gitbook.io/catalib)**
+
 Инструмент сборки модульных плагинов для exteraGram.
 
 exteraGram загружает плагин как ровно один файл `<plugin_id>.py`. catalib позволяет
@@ -30,10 +32,13 @@ pip install catalib
 
 ## Документация
 
-Полное руководство пользователя (GitBook) — в каталоге [book/](book/),
-точка входа [book/README.md](book/README.md): установка, быстрый старт,
+Полное руководство пользователя опубликовано в GitBook:
+**<https://raito-kyokai.gitbook.io/catalib>** — установка, быстрый старт,
 руководство, CLI, деплой, внутреннее устройство, примеры, решение проблем,
 публикация в PyPI и настройка GitBook.
+
+Исходники документации — в каталоге [book/](book/) (синхронизируются с
+GitBook через Git Sync).
 
 Внутренняя проектная документация (архитектура, ADR, планы) —
 в каталоге [docs/](docs/).

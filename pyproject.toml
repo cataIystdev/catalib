@@ -44,6 +44,7 @@ catalib = "catalib.cli.app:main"
 
 [project.urls]
 Homepage = "https://github.com/cataIystdev/catalib"
+Documentation = "https://raito-kyokai.gitbook.io/catalib"
 Repository = "https://github.com/cataIystdev/catalib"
 Issues = "https://github.com/cataIystdev/catalib/issues"
 Changelog = "https://github.com/cataIystdev/catalib/blob/main/CHANGELOG.md"
