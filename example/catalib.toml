@@ -1,0 +1,14 @@
+[plugin]
+id = "toolbox"
+name = "exteraToolbox"
+version = "1.0.0"
+description = "Набор чат-команд: калькулятор, заметки, генераторы, дата/время"
+author = "catalyst"
+icon = "exteraPlugins/1"
+min_version = ">=12.5.1"
+sdk_version = ">=1.4.4"
+
+[build]
+src = "src"
+entry = "plugin"
+out = "dist"
