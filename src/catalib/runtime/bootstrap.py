@@ -65,11 +65,14 @@ class _CatalibFinder:
         )
 
 
-def _find_plugin_class(namespace):
-    """Найти в пространстве имён класс плагина (подкласс BasePlugin).
+def _find_plugin_class(namespace, entry_module_name):
+    """Найти класс плагина, определённый в модуле точки входа.
 
-    Сначала пытается строгую проверку через ``base_plugin.BasePlugin``.
-    Если SDK недоступен (офлайн-тесты), опирается на имена базовых классов.
+    Учитываются только классы, объявленные именно в модуле ``entry_module_name``
+    (импортированные ``CatalibPlugin``/``BasePlugin`` и т. п. исключаются по
+    ``__module__``). Принадлежность к плагину определяется строгой проверкой
+    через ``base_plugin.BasePlugin``, а при отсутствии SDK — по именам базовых
+    классов в MRO.
     """
     base_cls = None
     try:
@@ -82,6 +85,8 @@ def _find_plugin_class(namespace):
     candidates = []
     for value in namespace.values():
         if not isinstance(value, type):
+            continue
+        if getattr(value, "__module__", None) != entry_module_name:
             continue
         if base_cls is not None:
             if issubclass(value, base_cls) and value is not base_cls:
@@ -141,6 +146,6 @@ def catalib_install(module_name, module_globals, sources, entry_fullname):
     # Импортировать точку входа и поднять класс плагина на верхний уровень.
     if entry_fullname != module_name:
         entry_module = importlib.import_module(entry_fullname)
-        plugin_class = _find_plugin_class(vars(entry_module))
+        plugin_class = _find_plugin_class(vars(entry_module), entry_fullname)
         if plugin_class is not None and plugin_class.__name__ not in module_globals:
             module_globals[plugin_class.__name__] = plugin_class
