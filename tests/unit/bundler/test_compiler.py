@@ -31,6 +31,10 @@ def test_output_is_valid_python_with_literal_metadata() -> None:
     meta = extract_metadata(result.text)
     assert meta["id"] == "demo"
     assert meta["version"] == "1.0.0"
+    # Канонический дандер есть, нестандартный __min_version__ не эмитится
+    # (на него exteraGram показывает экран несовместимости).
+    assert "__app_version__ = '>=12.5.1'" in result.text
+    assert "__min_version__" not in result.text
     assert "catalib_install('demo', globals(), _CATALIB_SOURCES, _CATALIB_ENTRY)" in result.text
 
 

@@ -18,8 +18,8 @@ class SamplePlugin(CatalibPlugin):
     def on_request(self, *a):
         return None
 
-    @menu_item("Открыть", item_type="DRAWER")
-    def open_action(self):
+    @menu_item("Открыть", menu_type="DRAWER_MENU", icon="msg_info")
+    def open_action(self, context):
         return "opened"
 
     def settings(self):
@@ -46,7 +46,10 @@ def test_on_plugin_load_registers_hooks_and_menu_and_calls_on_load() -> None:
     assert ("send_message", 0) in plugin.registered_hooks
     assert ("messages.sendMessage", 0) in plugin.registered_hooks
     assert len(plugin.registered_menu_items) == 1
-    assert plugin.registered_menu_items[0].text == "Открыть"
+    item = plugin.registered_menu_items[0]
+    assert item.text == "Открыть"
+    assert item.menu_type == "DRAWER_MENU"
+    assert item.icon == "msg_info"
     assert plugin.loaded is True
 
 
@@ -80,6 +83,11 @@ def test_send_message_hook_priority_fallback() -> None:
 def test_menu_item_requires_text() -> None:
     with pytest.raises(ValueError, match="непустой строкой"):
         menu_item("")
+
+
+def test_menu_item_rejects_unknown_menu_type() -> None:
+    with pytest.raises(ValueError, match="menu_type"):
+        menu_item("X", menu_type="DRAWER")
 
 
 def test_hook_request_requires_name() -> None:

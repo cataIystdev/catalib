@@ -41,9 +41,10 @@ def _metadata_block(manifest: PluginManifest) -> str:
     if manifest.icon:
         lines.append(f"__icon__ = {manifest.icon!r}")
     if manifest.min_version:
-        # Обе конвенции встречаются в документации/SDK exteraGram.
+        # Только канонический дандер exteraGram. Нестандартный
+        # __min_version__ не эмитится: exteraGram показывает на него
+        # отдельный экран несовместимости.
         lines.append(f"__app_version__ = {manifest.min_version!r}")
-        lines.append(f"__min_version__ = {manifest.min_version!r}")
     if manifest.sdk_version:
         lines.append(f"__sdk_version__ = {manifest.sdk_version!r}")
     return "\n".join(lines) + "\n"

@@ -44,10 +44,12 @@ except Exception:  # pragma: no cover - ветка для обычного Pytho
             self.params = params
 
     class MenuItemType:
-        """Заглушка типов пунктов меню."""
+        """Заглушка типов пунктов меню (значения как в SDK exteraGram)."""
 
-        DRAWER = "DRAWER"
+        DRAWER_MENU = "DRAWER_MENU"
+        MESSAGE_CONTEXT_MENU = "MESSAGE_CONTEXT_MENU"
         CHAT_ACTION_MENU = "CHAT_ACTION_MENU"
+        PROFILE_ACTION_MENU = "PROFILE_ACTION_MENU"
 
     class MenuItemData:
         """Заглушка описания пункта меню."""

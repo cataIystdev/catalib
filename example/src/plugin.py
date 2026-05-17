@@ -84,6 +84,6 @@ class ToolboxPlugin(CatalibPlugin):
         params.message = clamp_result(result)
         return HookResult(strategy=HookStrategy.MODIFY, params=params)
 
-    @menu_item("exteraToolbox: справка")
-    def show_help(self) -> None:
+    @menu_item("exteraToolbox: справка", menu_type="DRAWER_MENU", icon="msg_info")
+    def show_help(self, context: dict) -> None:
         log(self._registry.help_text(self._prefix()))

@@ -48,6 +48,11 @@ exteraGram), исключая ошибку «динамические метад
   `catalib.support` (и минимальный `catalib`) вендорятся в собранный файл и
   отдаются встроенным загрузчиком под их настоящими именами (модуль
   `bundler/vendor.py`).
+- API SDK для пунктов меню фиксирован эмпирически (проверено на устройстве):
+  `MenuItemData(menu_type=MenuItemType.{DRAWER_MENU|MESSAGE_CONTEXT_MENU|
+  CHAT_ACTION_MENU|PROFILE_ACTION_MENU}, text=..., on_click=...,
+  [icon=..., subtext=...])`, обработчик принимает `context: dict`.
+  Декоратор `menu_item` и `support.sdk`-заглушки приведены к этому API.
 
 ## Связи
 

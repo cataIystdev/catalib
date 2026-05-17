@@ -19,25 +19,56 @@ from catalib.support.settings import SettingItem
 MENU_ATTR = "__catalib_menu__"
 
 
+#: Допустимые типы меню exteraGram (значения MenuItemType).
+MENU_TYPES = (
+    "DRAWER_MENU",
+    "MESSAGE_CONTEXT_MENU",
+    "CHAT_ACTION_MENU",
+    "PROFILE_ACTION_MENU",
+)
+
+
 @dataclass(frozen=True, slots=True)
 class MenuSpec:
-    """Описание пункта меню, привязанного к методу-обработчику."""
+    """Описание пункта меню, привязанного к методу-обработчику.
+
+    Метод-обработчик получает один аргумент ``context: dict`` (см. SDK).
+    """
 
     text: str
-    item_type: str
+    menu_type: str
+    icon: str = ""
+    subtext: str = ""
 
 
-def menu_item(text: str, item_type: str = "DRAWER") -> Callable[[Callable], Callable]:
+def menu_item(
+    text: str,
+    menu_type: str = "DRAWER_MENU",
+    icon: str = "",
+    subtext: str = "",
+) -> Callable[[Callable], Callable]:
     """Пометить метод как обработчик пункта меню.
 
     :param text: подпись пункта меню.
-    :param item_type: тип пункта (``DRAWER`` | ``CHAT_ACTION_MENU``).
+    :param menu_type: тип меню — одно из значений :data:`MENU_TYPES`
+        (``DRAWER_MENU``, ``MESSAGE_CONTEXT_MENU``, ``CHAT_ACTION_MENU``,
+        ``PROFILE_ACTION_MENU``).
+    :param icon: необязательное имя иконки (drawable).
+    :param subtext: необязательная подпись под текстом.
+
+    Декорируемый метод обязан принимать аргумент ``context: dict``.
     """
     if not isinstance(text, str) or not text:
         raise ValueError("текст пункта меню должен быть непустой строкой")
+    if menu_type not in MENU_TYPES:
+        raise ValueError(f"menu_type должен быть одним из {MENU_TYPES}")
 
     def decorator(func: Callable) -> Callable:
-        setattr(func, MENU_ATTR, MenuSpec(text=text, item_type=item_type))
+        setattr(
+            func,
+            MENU_ATTR,
+            MenuSpec(text=text, menu_type=menu_type, icon=icon, subtext=subtext),
+        )
         return func
 
     return decorator
@@ -97,13 +128,24 @@ class CatalibPlugin(BasePlugin):
             self.add_on_send_message_hook()
 
     def _register_menu_item(self, attr_name: str, menu_spec: MenuSpec) -> None:
-        """Построить и зарегистрировать пункт меню для метода-обработчика."""
-        from catalib.support.sdk import MenuItemData
+        """Построить и зарегистрировать пункт меню для метода-обработчика.
+
+        Использует реальный API SDK: ``MenuItemData(menu_type=MenuItemType.X,
+        text=..., on_click=...)``. Обработчик получает ``context: dict``.
+        """
+        from catalib.support.sdk import MenuItemData, MenuItemType
 
         handler = getattr(self, attr_name)
-        self.add_menu_item(
-            MenuItemData(text=menu_spec.text, item_type=menu_spec.item_type, on_click=handler)
-        )
+        kwargs = {
+            "menu_type": getattr(MenuItemType, menu_spec.menu_type),
+            "text": menu_spec.text,
+            "on_click": handler,
+        }
+        if menu_spec.icon:
+            kwargs["icon"] = menu_spec.icon
+        if menu_spec.subtext:
+            kwargs["subtext"] = menu_spec.subtext
+        self.add_menu_item(MenuItemData(**kwargs))
 
     def settings(self) -> list[SettingItem]:
         """Переопределяемый метод: вернуть список элементов настроек."""
