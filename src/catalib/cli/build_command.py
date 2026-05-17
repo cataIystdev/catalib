@@ -35,6 +35,6 @@ def build(
     if bundle.requirements:
         typer.echo(f"Зависимости: {', '.join(bundle.requirements)}")
     if check:
-        typer.echo("Проверка пройдена (файл не записан, --check).")
+        typer.echo("Проверка пройдена (файлы не записаны, --check).")
     else:
-        typer.echo(f"Файл: {outcome.output_path}")
+        typer.echo(f"Файлы: {outcome.output_path}, {outcome.plugin_path}")

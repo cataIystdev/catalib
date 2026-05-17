@@ -105,3 +105,46 @@ def test_find_plugin_class_filters_by_entry_module() -> None:
 
 def test_find_plugin_class_returns_none_when_absent() -> None:
     assert bootstrap._find_plugin_class({"a": 1, "b": object}, "m") is None
+
+
+def test_stale_vendored_catalib_is_purged(import_cleanup: None) -> None:
+    """Устаревший catalib.* из прошлого деплоя вычищается при install."""
+    import importlib
+    import importlib.machinery
+
+    stale = types.ModuleType("catalib.support")
+    stale.__spec__ = importlib.machinery.ModuleSpec(
+        "catalib.support", loader=None, origin="<catalib-vendor>/old.py"
+    )
+    stale.MARKER = "OLD"
+    sys.modules["catalib.support"] = stale
+
+    sources = {
+        "vp.app": (
+            "import catalib.support as cs\n"
+            "class BasePlugin:\n    pass\n"
+            "class P(BasePlugin):\n    VALUE = cs.MARKER\n",
+            False,
+            "<vp>/app.py",
+        ),
+        "catalib": ("", True, "<catalib-vendor>/catalib/__init__.py"),
+        "catalib.support": ('MARKER = "NEW"\n', True, "<catalib-vendor>/catalib/support/__init__.py"),
+    }
+    module = _install("vp", sources, "vp.app")
+    assert module.P.VALUE == "NEW"
+    assert sys.modules["catalib.support"].MARKER == "NEW"
+
+
+def test_real_host_catalib_not_purged(import_cleanup: None) -> None:
+    """Настоящий host-catalib (origin-файл) не трогается очисткой."""
+    before = sys.modules.get("catalib")
+    sources = {
+        "hp.app": (
+            "class BasePlugin:\n    pass\nclass P(BasePlugin):\n    pass\n",
+            False,
+            "<hp>/app.py",
+        ),
+    }
+    _install("hp", sources, "hp.app")
+    assert sys.modules.get("catalib") is before
+    assert before is not None and not getattr(before.__spec__, "origin", "").startswith("<")

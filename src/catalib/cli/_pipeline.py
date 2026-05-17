@@ -28,7 +28,10 @@ class BuildOutcome:
 
     manifest: PluginManifest
     bundle: BundleResult
+    #: Основной выходной файл ``<plugin_id>.py``.
     output_path: Path
+    #: Идентичная копия с расширением ``.plugin`` (для установки в exteraGram).
+    plugin_path: Path
 
 
 def build_bundle(project_dir: Path, *, write: bool = True) -> BuildOutcome:
@@ -53,8 +56,18 @@ def build_bundle(project_dir: Path, *, write: bool = True) -> BuildOutcome:
     ) as exc:
         raise BuildFailure(str(exc)) from exc
 
-    output_path = project_dir / manifest.build.out / bundle.filename
+    out_dir = project_dir / manifest.build.out
+    output_path = out_dir / bundle.filename
+    plugin_path = out_dir / f"{manifest.id}.plugin"
     if write:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        # Идентичное содержимое в двух расширениях: .py для разработки и
+        # совместимости, .plugin для установки в exteraGram.
         output_path.write_text(bundle.text, encoding="utf-8")
-    return BuildOutcome(manifest=manifest, bundle=bundle, output_path=output_path)
+        plugin_path.write_text(bundle.text, encoding="utf-8")
+    return BuildOutcome(
+        manifest=manifest,
+        bundle=bundle,
+        output_path=output_path,
+        plugin_path=plugin_path,
+    )

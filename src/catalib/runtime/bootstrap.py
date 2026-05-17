@@ -42,6 +42,10 @@ class _CatalibLoader:
             self._source.splitlines(keepends=True),
             self._origin,
         )
+        # Пометка: модуль создан встроенным загрузчиком из этого плагина.
+        # По ней при следующей загрузке вычищается устаревшая вендоренная
+        # копия (общее имя catalib.* в sys.modules между деплоями).
+        module.__catalib_vendored__ = self._catalib_plugin
         code = compile(self._source, self._origin, "exec")
         exec(code, module.__dict__)
 
@@ -115,6 +119,27 @@ def catalib_install(module_name, module_globals, sources, entry_fullname):
     ]
     prefix = module_name + "."
     for name in [n for n in sys.modules if n.startswith(prefix)]:
+        del sys.modules[name]
+
+    # Вычистить устаревшие вендоренные модули (catalib.support и т. п.):
+    # имя catalib.* общее между плагинами, и в общем sys.modules могла
+    # остаться копия из прошлого деплоя/другого плагина (в т. ч. собранная
+    # старым загрузчиком без пометки). Признак вендоренного модуля —
+    # пометка __catalib_vendored__ ИЛИ синтетический origin вида
+    # "<...>" (его ставит встроенный загрузчик). Настоящий host-catalib
+    # (тесты) имеет origin-путь файла и не трогается.
+    def _is_vendored(mod):
+        if getattr(mod, "__catalib_vendored__", None) is not None:
+            return True
+        spec = getattr(mod, "__spec__", None)
+        origin = getattr(spec, "origin", None) if spec is not None else None
+        return isinstance(origin, str) and origin.startswith("<")
+
+    for name in [
+        n
+        for n, mod in list(sys.modules.items())
+        if (n == "catalib" or n.startswith("catalib.")) and _is_vendored(mod)
+    ]:
         del sys.modules[name]
 
     sys.meta_path.insert(0, _CatalibFinder(module_name, sources))

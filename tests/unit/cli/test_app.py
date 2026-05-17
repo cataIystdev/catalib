@@ -26,9 +26,13 @@ def test_init_then_build_roundtrip(tmp_path: Path) -> None:
     build_result = runner.invoke(app, ["build", "--project", str(proj)])
     assert build_result.exit_code == 0, build_result.stdout
     out_file = proj / "dist" / "demo_plugin.py"
+    plugin_file = proj / "dist" / "demo_plugin.plugin"
     assert out_file.is_file()
+    assert plugin_file.is_file()
     text = out_file.read_text(encoding="utf-8")
     assert "__id__ = " in text and "catalib_install(" in text
+    # .plugin — побайтно идентичная копия .py
+    assert plugin_file.read_text(encoding="utf-8") == text
 
 
 def test_build_check_does_not_write(tmp_path: Path) -> None:

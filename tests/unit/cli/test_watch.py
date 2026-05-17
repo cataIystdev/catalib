@@ -22,7 +22,10 @@ class _Manifest:
 
 def _outcome(tmp_path: Path) -> BuildOutcome:
     return BuildOutcome(
-        manifest=_Manifest(), bundle=_Bundle(), output_path=tmp_path / "dist" / "demo.py"
+        manifest=_Manifest(),
+        bundle=_Bundle(),
+        output_path=tmp_path / "dist" / "demo.py",
+        plugin_path=tmp_path / "dist" / "demo.plugin",
     )
 
 
