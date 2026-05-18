@@ -651,7 +651,7 @@
 - **Блокирует:** T-212.
 
 ### T-205: Модуль formatting (text_formatting)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `formatting.py`: `parse_text(text,parse_mode='HTML',
   is_caption=False)`, `TLEntityType`, `RawEntity`. Офлайн — контракт
   `{"message"|"caption": text, "entities": []}` (реальный разбор сущностей

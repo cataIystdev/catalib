@@ -9,6 +9,11 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.formatting` — обёртки
+  `extera_utils.text_formatting`: `parse_text(text, parse_mode='HTML',
+  is_caption=False)`, `TLEntityType`, `RawEntity`. Офлайн — честный
+  контракт словаря с исходным текстом и пустыми сущностями.
+  См. ADR-0007.
 - Модуль `catalib.support.client` — обёртки `client_utils`: 8 констант
   очередей, `run_on_queue` (офлайн — синхронный вызов),
   `get_queue_by_name`, `send_request`, `send_text`/`send_photo`/
