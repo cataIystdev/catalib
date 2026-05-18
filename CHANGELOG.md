@@ -9,6 +9,12 @@
 
 ### Добавлено
 
+- Проверка обновлений: `catalib.check_for_updates()` безопасно
+  сверяется с PyPI и, если есть более новая версия, CLI печатает одну
+  строку-уведомление в stderr. Не чаще раза в сутки (кеш
+  `~/.cache/catalib/update-check.json`), любая ошибка/таймаут — молча,
+  отключение `CATALIB_NO_UPDATE_CHECK=1`. Не выполняется при импорте
+  пакета (вендоренный `catalib` в плагине не делает сетевых запросов).
 - Публичный API `catalib.support` ре-экспортирует весь новый паритетный
   surface (модули `android`/`client`/`files`/`reflection`/`formatting`/
   `dialogs`/`bulletins`/`proxy`/`classes` плюс поднятые наверх

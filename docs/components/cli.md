@@ -14,6 +14,12 @@
   `build`/`init`/`version` работают без `watchfiles`. См. ADR-0005.
 - `init_command.py` — `catalib init NAME [--id] [--dir] [--author]`.
 - `app.py` — сборка `typer.Typer`, точка входа `main`, команда `version`.
+  `main` перед запуском зовёт `_notify_update()` →
+  `catalib.check_for_updates()`: безопасная проверка PyPI на более новую
+  версию (кеш `~/.cache/catalib/update-check.json`, TTL сутки, opt-out
+  `CATALIB_NO_UPDATE_CHECK=1`, любая ошибка — молча), уведомление одной
+  строкой в stderr. Сеть не вызывается при импорте пакета (важно для
+  вендоренного `catalib` в плагине).
 
 ## Связи
 
