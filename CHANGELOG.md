@@ -9,6 +9,10 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.dialogs` — обёртка `ui.alert.AlertDialogBuilder`
+  с полным набором методов (заголовок/сообщение/пункты/кнопки/слушатели/
+  внешний вид/прогресс/жизненный цикл) и константами (`ALERT_TYPE_*`,
+  `BUTTON_*`). Офлайн — chainable-рекордер. См. ADR-0007.
 - Модуль `catalib.support.formatting` — обёртки
   `extera_utils.text_formatting`: `parse_text(text, parse_mode='HTML',
   is_caption=False)`, `TLEntityType`, `RawEntity`. Офлайн — честный

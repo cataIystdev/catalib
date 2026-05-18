@@ -663,7 +663,7 @@
 - **Блокирует:** T-212.
 
 ### T-206: Модуль dialogs (AlertDialogBuilder)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `dialogs.py`: обёртка `AlertDialogBuilder` со всеми
   методами (`set_title`/`set_message`/`set_items`/`set_view`/кнопки/
   слушатели/внешний вид/жизненный цикл/`set_progress`) и константами
