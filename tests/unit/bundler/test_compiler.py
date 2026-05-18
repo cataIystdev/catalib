@@ -38,6 +38,13 @@ def test_output_is_valid_python_with_literal_metadata() -> None:
     assert "catalib_install('demo', globals(), _CATALIB_SOURCES, _CATALIB_ENTRY)" in result.text
 
 
+def test_header_contains_repository_url() -> None:
+    result = compile_plugin(_manifest(), _tree())
+    first_line = result.text.splitlines()[0]
+    assert "сгенерирован catalib" in first_line
+    assert "https://github.com/cataIystdev/catalib" in first_line
+
+
 def test_requirements_block_emitted_only_when_present() -> None:
     without = compile_plugin(_manifest(), _tree())
     assert "__requirements__" not in without.text

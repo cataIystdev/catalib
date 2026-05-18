@@ -20,7 +20,8 @@ from catalib.manifest.metadata import validate_metadata
 from catalib.manifest.model import PluginManifest
 
 _HEADER = (
-    "# Файл сгенерирован catalib из модульного дерева исходников.\n"
+    "# Файл сгенерирован catalib (https://github.com/cataIystdev/catalib)"
+    " из модульного дерева исходников.\n"
     "# Редактировать вручную не следует: правьте исходники и пересоберите.\n"
 )
 
