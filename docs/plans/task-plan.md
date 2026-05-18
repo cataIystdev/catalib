@@ -772,7 +772,7 @@
 - **Блокирует:** —
 
 ### T-214: pyproject — Homepage на GitBook, Repository на GitHub
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `Homepage` → `https://raito-kyokai.gitbook.io/catalib`,
   `Repository` остаётся GitHub. Документация/book не затрагиваются.
 - **Артефакты:** `pyproject.toml`.

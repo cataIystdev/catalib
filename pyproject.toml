@@ -49,7 +49,7 @@ publish = [
 catalib = "catalib.cli.app:main"
 
 [project.urls]
-Homepage = "https://github.com/cataIystdev/catalib"
+Homepage = "https://raito-kyokai.gitbook.io/catalib"
 Documentation = "https://raito-kyokai.gitbook.io/catalib"
 Repository = "https://github.com/cataIystdev/catalib"
 Issues = "https://github.com/cataIystdev/catalib/issues"
