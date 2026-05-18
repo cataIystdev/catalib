@@ -9,6 +9,13 @@
 
 ### Добавлено
 
+- Публичный API `catalib.support` ре-экспортирует весь новый паритетный
+  surface (модули `android`/`client`/`files`/`reflection`/`formatting`/
+  `dialogs`/`bulletins`/`proxy`/`classes` плюс поднятые наверх
+  `AlertDialogBuilder`/`BulletinHelper`/`parse_text` и весь class proxy),
+  сохраняя все прежние имена. Новые модули добавлены в вендоринг — иначе
+  собранные плагины не загрузились бы (закреплено интеграционным тестом
+  сборки). См. ADR-0007.
 - Декларативная карта хук-методов запроса/апдейта: декораторы
   `@hook.pre_request`/`@hook.post_request`/`@hook.on_update`/
   `@hook.on_updates(name, *, priority=, match_substring=)` и диспетчеры

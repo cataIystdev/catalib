@@ -37,6 +37,44 @@ _NEW = {
     "xposed",
 }
 
+#: Имена, добавленные в 0.3.0 (полный паритет с SDK).
+_NEW_0_3 = {
+    # Модули-области.
+    "android",
+    "bulletins",
+    "classes",
+    "client",
+    "dialogs",
+    "files",
+    "formatting",
+    "proxy",
+    "reflection",
+    # Поднятые на верхний уровень.
+    "AlertDialogBuilder",
+    "BulletinHelper",
+    "RawEntity",
+    "TLEntityType",
+    "parse_text",
+    # Class proxy.
+    "Base",
+    "ClassHelper",
+    "J",
+    "JavaHelper",
+    "PyObj",
+    "java_subclass",
+    "jMVELmethod",
+    "jMVELoverride",
+    "jclassbuilder",
+    "jconstructor",
+    "jfield",
+    "jgetmethod",
+    "jmethod",
+    "joverload",
+    "joverride",
+    "jpreconstructor",
+    "jsetmethod",
+}
+
 
 def test_legacy_names_preserved() -> None:
     for name in _LEGACY:
@@ -45,9 +83,21 @@ def test_legacy_names_preserved() -> None:
 
 
 def test_new_names_exported() -> None:
-    for name in _NEW:
+    for name in _NEW | _NEW_0_3:
         assert name in support.__all__, f"не экспортировано {name}"
         assert hasattr(support, name), f"нет атрибута {name}"
+
+
+def test_proxy_and_helpers_usable_from_facade() -> None:
+    # Class proxy доступен прямо из catalib.support (приоритет пользователя).
+    assert callable(support.java_subclass)
+    assert callable(support.jfield)
+    obj = support.PyObj.create({"k": 1})
+    assert obj.value == {"k": 1}
+    # UI-хелперы и контроллеры — через подмодули.
+    assert hasattr(support.client, "send_text")
+    assert hasattr(support.files, "read_file")
+    assert support.parse_text("x") == {"message": "x", "entities": []}
 
 
 def test_all_matches_attributes() -> None:

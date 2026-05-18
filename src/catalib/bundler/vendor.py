@@ -20,6 +20,15 @@ _VENDOR_MODULES: tuple[tuple[str, str, bool], ...] = (
     ("catalib.support.hooks", "catalib/support/hooks.py", False),
     ("catalib.support.settings", "catalib/support/settings.py", False),
     ("catalib.support.xposed", "catalib/support/xposed.py", False),
+    ("catalib.support.android", "catalib/support/android.py", False),
+    ("catalib.support.client", "catalib/support/client.py", False),
+    ("catalib.support.files", "catalib/support/files.py", False),
+    ("catalib.support.reflection", "catalib/support/reflection.py", False),
+    ("catalib.support.formatting", "catalib/support/formatting.py", False),
+    ("catalib.support.dialogs", "catalib/support/dialogs.py", False),
+    ("catalib.support.bulletins", "catalib/support/bulletins.py", False),
+    ("catalib.support.proxy", "catalib/support/proxy.py", False),
+    ("catalib.support.classes", "catalib/support/classes.py", False),
     ("catalib.support.plugin", "catalib/support/plugin.py", False),
 )
 
