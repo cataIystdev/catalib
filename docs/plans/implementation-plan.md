@@ -64,6 +64,74 @@ catalib даёт разработчику возможность писать п
     сохранены (вендоринг `support` в сторонних плагинах не ломается).
 - Публикация пакета в PyPI и пуш в GitHub релиза 0.2.0.
 
+#### Дополнительно в версии 0.3.0
+
+Полный паритет встраиваемого слоя `catalib.support` со **всем публичным
+SDK exteraGram** по официальной документации
+(<https://plugins.exteragram.app/docs>, разделы plugin-class,
+plugin-settings, class-proxy, xposed-hooking, android-utils, client-utils,
+text-formatting, hook-utils, file-utils, alert-dialog-builder,
+bulletin-helper, common-source-classes, pip, available-libraries).
+Источник истины — официальная документация и веб-поиск; MCP — только
+вторичная сверка (бывает неполным). Решение зафиксировано в ADR-0007.
+
+Слой `support` декомпозируется на модули по областям SDK (правило 3.1):
+`sdk` (ядро), `android` (`android_utils`), `client` (`client_utils`),
+`files` (`file_utils`), `reflection` (`hook_utils`), `formatting`
+(`extera_utils.text_formatting`), `dialogs` (`ui.alert`), `bulletins`
+(`ui.bulletin`), `proxy` (`extera_utils.classes` — class proxy),
+`classes` (FQN-константы общих Java-классов). Каждый модуль: реальный
+SDK на устройстве через безопасный импорт, полнофункциональная
+офлайн-заглушка с тем же контрактом для юнит-тестов (это не TODO и не
+пустышка — это документированный паттерн ADR-0003; на устройстве всегда
+работает настоящий SDK).
+
+Конкретно добавляется и доводится до полноты:
+
+- ядро (`sdk`): `HookResult` со всеми полями (`strategy`, `request`,
+  `response`, `update`, `updates`, `params`); расширенная офлайн-заглушка
+  `BasePlugin` (`set_setting(reload_settings=)`, `export_settings`,
+  `import_settings`, `remove_menu_item`, `add_hook(match_substring=)`,
+  `hook_method(before_filters=,after_filters=,before=,after=)`,
+  `hook_all_methods`, `hook_all_constructors`); `run_on_ui_thread(delay=)`;
+- `android`: `R`, `OnClickListener`, `OnLongClickListener`,
+  `copy_to_clipboard`, `log`, `run_on_ui_thread`;
+- `client`: 8 констант очередей, `run_on_queue`, `get_queue_by_name`,
+  `send_request`, `send_text`/`send_photo`/`send_document`/`send_video`/
+  `send_audio`/`send_message`, `edit_message`, 17 геттеров контроллеров,
+  `NotificationCenterDelegate`;
+- `files`: `get_*_dir` (7 шт.), `ensure_dir_exists`, `list_dir`,
+  `write_file`, `read_file`, `delete_file` (офлайн — настоящая работа с
+  ФС и temp-каталогами, не заглушка);
+- `reflection`: `find_class`, `get_private_field`, `set_private_field`,
+  `get_static_private_field`, `set_static_private_field`;
+- `formatting`: `parse_text`, `TLEntityType`, `RawEntity`;
+- `dialogs`: `AlertDialogBuilder` (полный набор методов и констант);
+- `bulletins`: `BulletinHelper` (все `show_*`, `DURATION_*`);
+- `proxy` (приоритет — раздел class-proxy): `Base`, `java_subclass`,
+  `joverride`, `joverload`, `jmethod`, `jMVELmethod`, `jMVELoverride`,
+  `jclassbuilder`, `jfield`, `jgetmethod`, `jsetmethod`, `jconstructor`,
+  `jpreconstructor`, `PyObj`, `J`, `JavaHelper`, `ClassHelper`;
+- `classes`: FQN-константы общих классов (`CHAT_ACTIVITY` и т. п.);
+- `settings`: довод до паритета — `on_long_click` у Switch/Selector/
+  Input/Text/Custom, `link_alias` у Selector, `create_sub_fragment`/
+  `link_alias` у Custom, обёртка `SimpleSettingFactory`;
+- `hooks`: декларативные `@hook.pre_request`/`@hook.post_request`/
+  `@hook.on_update`/`@hook.on_updates` (полная карта хук-методов SDK).
+
+Новые модули добавляются в вендоринг (`bundler.vendor`) — иначе собранные
+плагины не загрузятся (инвариант закреплён интеграционным тестом сборки).
+
+Прочее (не идёт в документацию/book по явному указанию): комментарий
+шапки собранного файла дополняется ссылкой на репозиторий
+(`catalib (<https://github.com/cataIystdev/catalib>)`). URL `Homepage`
+в `pyproject.toml` указывает на GitBook (документация), `Repository` —
+на GitHub (исходники).
+
+Документация `docs/` и руководство `book/` приводятся в соответствие с
+функционалом 0.2.0 и 0.3.0. Все изменения строго аддитивны; обратная
+совместимость подтверждается пересборкой backrooms и его тестами.
+
 ### Не входит в объём
 
 - Графический интерфейс (только CLI).
@@ -163,6 +231,20 @@ catalib/
 │   ├── deploy/               — ADB-обёртка и перезагрузка плагина
 │   ├── scaffold/             — генерация шаблона проекта (catalib init)
 │   └── support/              — рантайм-хелперы, бандлящиеся в плагин
+│       ├── sdk.py            — ядро SDK (BasePlugin, HookResult, ...)
+│       ├── android.py        — обёртки android_utils
+│       ├── client.py         — client_utils (очереди, запросы, отправка)
+│       ├── files.py          — file_utils
+│       ├── reflection.py     — hook_utils (поля через рефлексию)
+│       ├── formatting.py     — extera_utils.text_formatting
+│       ├── dialogs.py        — ui.alert (AlertDialogBuilder)
+│       ├── bulletins.py      — ui.bulletin (BulletinHelper)
+│       ├── proxy.py          — extera_utils.classes (class proxy)
+│       ├── classes.py        — FQN-константы общих Java-классов
+│       ├── settings.py       — декларативные ui.settings
+│       ├── hooks.py          — декораторы хуков
+│       ├── xposed.py         — декларативные Xposed-хуки
+│       └── plugin.py         — CatalibPlugin
 ├── tests/
 │   ├── unit/                 — модульные тесты по слоям
 │   ├── integration/          — сборка реального примера, проверка импорта
@@ -327,7 +409,8 @@ out = "dist"
 - Связанные ADR: ADR-0001 (модульный монолит), ADR-0002 (механизм bundler +
   meta_path), ADR-0003 (мини-фреймворк поверх SDK), ADR-0004 (деплой через
   dev server), ADR-0005 (опциональная `watchfiles`), ADR-0006 (паритет
-  support-слоя с SDK exteraGram).
+  support-слоя с SDK exteraGram, 0.2.0), ADR-0007 (полный паритет support
+  со всем публичным SDK и декомпозиция на модули, 0.3.0).
 - Связанные документы: `docs/architecture/overview.md`, `docs/plans/task-plan.md`,
   `docs/components/`.
 - Внешние ссылки: документация exteraGram `https://plugins.exteragram.app/docs`.

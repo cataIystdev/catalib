@@ -572,6 +572,256 @@
 
 ---
 
+## Раздел 12. Полный паритет с публичным SDK (v0.3.0)
+
+> Источник истины — официальная документация
+> <https://plugins.exteragram.app/docs> и веб-поиск; MCP — вторичная сверка.
+> Жёсткое требование: не сломать ничего (вендоринг `support` в сторонних
+> плагинах), всё аддитивно, проверяется пересборкой backrooms + тестами.
+> Офлайн-заглушки — полнофункциональный контракт для тестов (ADR-0003), не
+> TODO; на устройстве всегда работает настоящий SDK.
+
+### T-200: Ядро sdk — полный HookResult и расширенная заглушка BasePlugin
+- **Статус:** pending
+- **Описание:** `HookResult` со всеми полями SDK (`strategy`, `request`,
+  `response`, `update`, `updates`, `params`); офлайн-`BasePlugin` доводится
+  до полного интерфейса: `set_setting(key,value,reload_settings=False)`,
+  `export_settings()`, `import_settings(d,reload_settings=True)`,
+  `remove_menu_item(item_id)`, `add_hook(name,match_substring=False,
+  priority=0)`, `add_menu_item` возвращает id,
+  `hook_method(method,handler=None,priority=10,before_filters=(),
+  after_filters=(),before=None,after=None)`, `hook_all_methods`,
+  `hook_all_constructors`, `unhook_method`; `run_on_ui_thread(cb,delay=0)`.
+  Все прежние сигнатуры сохранены.
+- **Артефакты:** `src/catalib/support/sdk.py`,
+  `tests/unit/support/test_sdk.py`, `CHANGELOG.md`.
+- **Критерий завершения:** прежние тесты зелёные, новые поля/методы покрыты.
+- **Зависит от:** —
+- **Блокирует:** T-211, T-212.
+
+### T-201: Модуль android (android_utils)
+- **Статус:** pending
+- **Описание:** `android.py`: `R`, `OnClickListener`, `OnLongClickListener`,
+  `copy_to_clipboard`, ре-экспорт `log`, `run_on_ui_thread`. Безопасный
+  импорт + офлайн-заглушки (listener-обёртки хранят и зовут callable;
+  `copy_to_clipboard` офлайн — no-op с записью).
+- **Артефакты:** `src/catalib/support/android.py`,
+  `tests/unit/support/test_android.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн-обёртки вызывают callable; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-202: Модуль files (file_utils)
+- **Статус:** pending
+- **Описание:** `files.py`: `get_plugins_dir`/`get_cache_dir`/
+  `get_files_dir`/`get_images_dir`/`get_videos_dir`/`get_audios_dir`/
+  `get_documents_dir`, `ensure_dir_exists`, `list_dir`, `write_file`,
+  `read_file`, `delete_file`. Офлайн — настоящая работа с ФС (temp-каталоги
+  под каждый getter), это полноценная реализация, не заглушка.
+- **Артефакты:** `src/catalib/support/files.py`,
+  `tests/unit/support/test_files.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн write/read/list/delete/ensure_dir реально
+  работают; `get_plugins_dir` сохраняет прежнее поведение.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-203: Модуль reflection (hook_utils)
+- **Статус:** pending
+- **Описание:** `reflection.py`: `find_class` (ре-экспорт),
+  `get_private_field`, `set_private_field`, `get_static_private_field`,
+  `set_static_private_field`. Офлайн: геттеры → `None`, сеттеры → `False`.
+- **Артефакты:** `src/catalib/support/reflection.py`,
+  `tests/unit/support/test_reflection.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн-контракт корректен; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-204: Модуль client (client_utils)
+- **Статус:** pending
+- **Описание:** `client.py`: 8 констант очередей, `run_on_queue`
+  (офлайн — синхронный вызов), `get_queue_by_name`, `send_request`,
+  `send_text`/`send_photo`/`send_document`/`send_video`/`send_audio`/
+  `send_message`, `edit_message`, 17 геттеров контроллеров,
+  `NotificationCenterDelegate`. Офлайн — записываемые no-op/`None`.
+- **Артефакты:** `src/catalib/support/client.py`,
+  `tests/unit/support/test_client.py`, `CHANGELOG.md`.
+- **Критерий завершения:** все имена доступны офлайн с верным контрактом;
+  `run_on_queue` офлайн исполняет callable; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-205: Модуль formatting (text_formatting)
+- **Статус:** pending
+- **Описание:** `formatting.py`: `parse_text(text,parse_mode='HTML',
+  is_caption=False)`, `TLEntityType`, `RawEntity`. Офлайн — контракт
+  `{"message"|"caption": text, "entities": []}` (реальный разбор сущностей
+  device-side).
+- **Артефакты:** `src/catalib/support/formatting.py`,
+  `tests/unit/support/test_formatting.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн-контракт честный; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-206: Модуль dialogs (AlertDialogBuilder)
+- **Статус:** pending
+- **Описание:** `dialogs.py`: обёртка `AlertDialogBuilder` со всеми
+  методами (`set_title`/`set_message`/`set_items`/`set_view`/кнопки/
+  слушатели/внешний вид/жизненный цикл/`set_progress`) и константами
+  (`ALERT_TYPE_*`, `BUTTON_*`). Офлайн — chainable-рекордер.
+- **Артефакты:** `src/catalib/support/dialogs.py`,
+  `tests/unit/support/test_dialogs.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн-рекордер фиксирует вызовы; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-207: Модуль bulletins (BulletinHelper)
+- **Статус:** pending
+- **Описание:** `bulletins.py`: `BulletinHelper` со всеми `show_*`
+  (`show_info`/`show_error`/`show_success`/`show_simple`/`show_two_line`/
+  `show_with_button`/`show_undo`/`show_copied_to_clipboard`/
+  `show_link_copied`/`show_file_saved_to_gallery`/
+  `show_file_saved_to_downloads`) и `DURATION_*`. Офлайн — рекордер.
+- **Артефакты:** `src/catalib/support/bulletins.py`,
+  `tests/unit/support/test_bulletins.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн-рекордер фиксирует показы; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-208: Модуль proxy (extera_utils.classes, class proxy)
+- **Статус:** pending
+- **Описание:** `proxy.py`: безопасный импорт и офлайн-заглушки всей
+  поверхности class-proxy: `Base`, `java_subclass`, `joverride`,
+  `joverload`, `jmethod`, `jMVELmethod`, `jMVELoverride`, `jclassbuilder`,
+  `jfield`, `jgetmethod`, `jsetmethod`, `jconstructor`, `jpreconstructor`,
+  `PyObj`, `J`, `JavaHelper`, `ClassHelper`. Офлайн — декораторы
+  pass-through-маркеры, `jfield` — дескриптор со значением по умолчанию,
+  `Base` — пригодный базовый класс, `J` — passthrough-обёртка,
+  `PyObj.create` — обёртка-хранилище. Раздел отмечен пользователем как
+  приоритетный.
+- **Артефакты:** `src/catalib/support/proxy.py`,
+  `tests/unit/support/test_proxy.py`, `CHANGELOG.md`.
+- **Критерий завершения:** офлайн-импорт и декларации классов-проксей не
+  падают, декораторы/`jfield`/`J`/`PyObj` имеют верный контракт; тесты
+  зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-209: Модуль classes (FQN-константы)
+- **Статус:** pending
+- **Описание:** `classes.py`: строковые FQN-константы общих Java-классов
+  (`LAUNCH_ACTIVITY`, `PROFILE_ACTIVITY`, `CHAT_ACTIVITY`,
+  `CHAT_MESSAGE_CELL`, `MESSAGE_OBJECT`, `ANDROID_UTILITIES`,
+  `MESSAGES_CONTROLLER`, `MESSAGES_STORAGE`, `SEND_MESSAGES_HELPER`,
+  `BULLETIN_FACTORY`, `ALERT_DIALOG`, `TLRPC`). Чистые данные, без SDK.
+- **Артефакты:** `src/catalib/support/classes.py`,
+  `tests/unit/support/test_classes.py`, `CHANGELOG.md`.
+- **Критерий завершения:** константы доступны и совпадают с документацией.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-210: Settings — довод до паритета
+- **Статус:** pending
+- **Описание:** добавить `on_long_click` (Switch/Selector/Input/Text/
+  Custom), `link_alias` (Selector), `create_sub_fragment`/`link_alias`
+  (Custom); обёртка `simple_setting_factory(...)` (SimpleSettingFactory).
+  Прежние сигнатуры и формируемый `params` неизменны.
+- **Артефакты:** `src/catalib/support/settings.py`,
+  `tests/unit/support/test_settings.py`, `CHANGELOG.md`.
+- **Критерий завершения:** новые параметры доходят только когда заданы;
+  обратная совместимость закреплена тестами.
+- **Зависит от:** —
+- **Блокирует:** T-212.
+
+### T-211: Hooks — декларативная карта хук-методов
+- **Статус:** pending
+- **Описание:** `@hook.pre_request`/`@hook.post_request`/`@hook.on_update`/
+  `@hook.on_updates(name=...,priority=...)` + регистрация в
+  `CatalibPlugin.on_plugin_load` через `add_hook`. `hook.request`
+  сохраняется как алиас прежнего поведения (обратная совместимость).
+- **Артефакты:** `src/catalib/support/hooks.py`,
+  `src/catalib/support/plugin.py`, `tests/unit/support/test_plugin.py`,
+  `tests/unit/support/test_hooks_map.py`, `CHANGELOG.md`.
+- **Критерий завершения:** новые декораторы регистрируются; прежние
+  `send_message`/`request`/`app_event` не затронуты; тесты зелёные.
+- **Зависит от:** T-200
+- **Блокирует:** T-212.
+
+### T-212: Публичный API и вендоринг новых модулей
+- **Статус:** pending
+- **Описание:** `support/__init__.py` ре-экспортирует весь новый
+  публичный surface (аддитивно, прежние имена сохранены);
+  `bundler/vendor.py` вендорит все новые модули. Тест публичного API и
+  тест границы сред зелёные.
+- **Артефакты:** `src/catalib/support/__init__.py`,
+  `src/catalib/bundler/vendor.py`, `tests/unit/support/test_public_api.py`,
+  `CHANGELOG.md`.
+- **Критерий завершения:** импорт новых и прежних имён работает; собранный
+  плагин содержит все модули (интеграционный тест сборки зелёный).
+- **Зависит от:** T-200..T-211
+- **Блокирует:** T-216, T-217.
+
+### T-213: Ссылка на репозиторий в шапке собранного файла
+- **Статус:** pending
+- **Описание:** комментарий шапки — «файл сгенерирован catalib
+  (<https://github.com/cataIystdev/catalib>) из модульного дерева
+  исходников». В документацию/book не выносится (явное указание).
+- **Артефакты:** `src/catalib/bundler/compiler.py`,
+  `tests/unit/bundler/test_compiler.py`.
+- **Критерий завершения:** шапка содержит URL; тесты компилятора зелёные.
+- **Зависит от:** —
+- **Блокирует:** —
+
+### T-214: pyproject — Homepage на GitBook, Repository на GitHub
+- **Статус:** pending
+- **Описание:** `Homepage` → `https://raito-kyokai.gitbook.io/catalib`,
+  `Repository` остаётся GitHub. Документация/book не затрагиваются.
+- **Артефакты:** `pyproject.toml`.
+- **Критерий завершения:** `python -m build` + `twine check` зелёные;
+  метаданные содержат корректные URL.
+- **Зависит от:** —
+- **Блокирует:** T-217.
+
+### T-215: Документация docs/ и ADR-0007
+- **Статус:** pending
+- **Описание:** ADR-0007 (полный паритет + декомпозиция модулей);
+  обновить `docs/components/support.md` (и при необходимости разбить),
+  `docs/architecture/overview.md`, `docs/README.md`, `docs/glossary.md`
+  под функционал 0.2.0 и 0.3.0. Раздел «Связи» в каждом документе.
+- **Артефакты:** `docs/architecture/decisions/ADR-0007-*.md`,
+  `docs/components/*`, `docs/architecture/overview.md`,
+  `docs/README.md`, `docs/glossary.md`.
+- **Критерий завершения:** документация соответствует коду; связи актуальны.
+- **Зависит от:** T-212
+- **Блокирует:** T-217.
+
+### T-216: Руководство book/ под 0.2.0 и 0.3.0
+- **Статус:** pending
+- **Описание:** обновить/добавить страницы `book/` (sdk-access, settings,
+  hooks, menu-items, plugin-class, reference/api, новые страницы по
+  class-proxy, client/android/files/ui-helpers/reflection/formatting),
+  `SUMMARY.md`, `book/changelog.md` — под весь функционал 0.2.0 и 0.3.0.
+- **Артефакты:** `book/**`.
+- **Критерий завершения:** book покрывает весь публичный API; навигация
+  (`SUMMARY.md`) согласована.
+- **Зависит от:** T-212
+- **Блокирует:** T-217.
+
+### T-217: Релиз 0.3.0
+- **Статус:** pending
+- **Описание:** версия `0.2.0` → `0.3.0`; CHANGELOG `[Unreleased]` →
+  `[0.3.0]`; самопроверка (`ruff`, `pytest`, `python -m build`,
+  `twine check`); пересборка backrooms свежим catalib + прогон его
+  тестов (доказательство обратной совместимости); тег `v0.3.0`; push и
+  публикация в PyPI — с подтверждением пользователя (outward-facing).
+- **Артефакты:** `pyproject.toml`, `src/catalib/__init__.py`,
+  `CHANGELOG.md`, git-тег, артефакты `dist/`.
+- **Критерий завершения:** всё зелёное; backrooms не сломан; релиз помечен;
+  push/публикация выполнены либо явно отложены по решению пользователя.
+- **Зависит от:** T-212, T-213, T-214, T-215, T-216
+- **Блокирует:** —
+
+---
+
 ## Карта зависимостей
 
 ```mermaid
@@ -616,4 +866,11 @@ graph TD
   T100 --> T108
   T106 --> T108
   T107 --> T108
+  T108 --> T200 & T201 & T202 & T203 & T204 & T205 & T206 & T207 & T208 & T209 & T210
+  T200 --> T211
+  T200 & T201 & T202 & T203 & T204 & T205 & T206 & T207 & T208 & T209 & T210 & T211 --> T212
+  T212 --> T215 --> T217
+  T212 --> T216 --> T217
+  T213 --> T217
+  T214 --> T217
 ```
