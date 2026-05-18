@@ -18,6 +18,9 @@
   ручного перебора API клика. Расширения строго аддитивны: прежние вызовы
   `header`/`switch`/`text_input`/`text` формируют тот же `params`. См.
   ADR-0006.
+- `catalib.support.menu_item`: необязательные поля пункта меню `item_id`,
+  `condition`, `priority` (keyword-only). Пробрасываются в `MenuItemData`
+  только когда заданы — прежний вызов формирует тот же `MenuItemData`.
 - `catalib.support.sdk`: безопасные импорты и офлайн-заглушки расширенного
   SDK exteraGram — `AppEvent`, `MethodHook`, `MethodReplacement`, `BaseHook`,
   `HookFilter`, `hook_filters`, `find_class`. Импортируются независимо от

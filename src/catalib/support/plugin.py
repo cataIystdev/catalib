@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from catalib.support.hooks import HOOK_ATTR, HookSpec
 from catalib.support.sdk import BasePlugin
@@ -33,12 +34,20 @@ class MenuSpec:
     """Описание пункта меню, привязанного к методу-обработчику.
 
     Метод-обработчик получает один аргумент ``context: dict`` (см. SDK).
+
+    :param item_id: необязательный стабильный идентификатор пункта.
+    :param condition: необязательный предикат показа пункта (как в SDK).
+    :param priority: необязательный приоритет пункта (по умолчанию 0 —
+        в ``MenuItemData`` не передаётся, действует значение SDK).
     """
 
     text: str
     menu_type: str
     icon: str = ""
     subtext: str = ""
+    item_id: str = ""
+    condition: Any = None
+    priority: int = 0
 
 
 def menu_item(
@@ -46,6 +55,10 @@ def menu_item(
     menu_type: str = "DRAWER_MENU",
     icon: str = "",
     subtext: str = "",
+    *,
+    item_id: str = "",
+    condition: Any = None,
+    priority: int = 0,
 ) -> Callable[[Callable], Callable]:
     """Пометить метод как обработчик пункта меню.
 
@@ -55,8 +68,13 @@ def menu_item(
         ``PROFILE_ACTION_MENU``).
     :param icon: необязательное имя иконки (drawable).
     :param subtext: необязательная подпись под текстом.
+    :param item_id: необязательный стабильный идентификатор пункта.
+    :param condition: необязательный предикат показа пункта.
+    :param priority: необязательный приоритет (0 — не передаётся в SDK).
 
     Декорируемый метод обязан принимать аргумент ``context: dict``.
+    Новые параметры — keyword-only; прежние позиционные вызовы и
+    формируемый ``MenuItemData`` не меняются.
     """
     if not isinstance(text, str) or not text:
         raise ValueError("текст пункта меню должен быть непустой строкой")
@@ -67,7 +85,15 @@ def menu_item(
         setattr(
             func,
             MENU_ATTR,
-            MenuSpec(text=text, menu_type=menu_type, icon=icon, subtext=subtext),
+            MenuSpec(
+                text=text,
+                menu_type=menu_type,
+                icon=icon,
+                subtext=subtext,
+                item_id=item_id,
+                condition=condition,
+                priority=priority,
+            ),
         )
         return func
 
@@ -145,6 +171,14 @@ class CatalibPlugin(BasePlugin):
             kwargs["icon"] = menu_spec.icon
         if menu_spec.subtext:
             kwargs["subtext"] = menu_spec.subtext
+        # Необязательные поля пробрасываются только когда заданы: прежний
+        # вызов (без них) формирует тот же MenuItemData, что и раньше.
+        if menu_spec.item_id:
+            kwargs["item_id"] = menu_spec.item_id
+        if menu_spec.condition is not None:
+            kwargs["condition"] = menu_spec.condition
+        if menu_spec.priority:
+            kwargs["priority"] = menu_spec.priority
         self.add_menu_item(MenuItemData(**kwargs))
 
     def settings(self) -> list[SettingItem]:
