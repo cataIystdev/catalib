@@ -582,7 +582,7 @@
 > TODO; на устройстве всегда работает настоящий SDK.
 
 ### T-200: Ядро sdk — полный HookResult и расширенная заглушка BasePlugin
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `HookResult` со всеми полями SDK (`strategy`, `request`,
   `response`, `update`, `updates`, `params`); офлайн-`BasePlugin` доводится
   до полного интерфейса: `set_setting(key,value,reload_settings=False)`,

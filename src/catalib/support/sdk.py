@@ -37,11 +37,29 @@ except Exception:  # pragma: no cover - ветка для обычного Pytho
         MODIFY_FINAL = "MODIFY_FINAL"
 
     class HookResult:
-        """Заглушка результата хука."""
+        """Заглушка результата хука со всеми полями SDK.
 
-        def __init__(self, strategy: str | None = None, params: Any = None) -> None:
+        Поля соответствуют документации plugin-class: ``strategy``,
+        ``request``, ``response``, ``update``, ``updates``, ``params``.
+        ``strategy``/``params`` остаются первыми позиционными (обратная
+        совместимость), остальные — необязательные.
+        """
+
+        def __init__(
+            self,
+            strategy: str | None = None,
+            params: Any = None,
+            request: Any = None,
+            response: Any = None,
+            update: Any = None,
+            updates: Any = None,
+        ) -> None:
             self.strategy = strategy or HookStrategy.DEFAULT
             self.params = params
+            self.request = request
+            self.response = response
+            self.update = update
+            self.updates = updates
 
     class MenuItemType:
         """Заглушка типов пунктов меню (значения как в SDK exteraGram)."""
@@ -68,34 +86,107 @@ except Exception:  # pragma: no cover - ветка для обычного Pytho
             self._settings: dict[str, Any] = {}
             self.registered_hooks: list[Any] = []
             self.registered_menu_items: list[Any] = []
+            self.removed_menu_items: list[Any] = []
             self.registered_xposed: list[Any] = []
+            self.registered_hook_all: list[Any] = []
+            self.hook_method_calls: list[dict[str, Any]] = []
             self.unhooked: list[Any] = []
             self.logged: list[str] = []
+            self._menu_seq = 0
+            self._menu_by_id: dict[Any, Any] = {}
 
         def add_on_send_message_hook(self, priority: int = 0) -> None:
             self.registered_hooks.append(("send_message", priority))
 
-        def hook_method(self, member: Any, hook: Any, priority: int = 10) -> Any:
-            """Зафиксировать Xposed-хук; вернуть дескриптор для unhook."""
-            handle = ("xposed", member, hook, priority)
+        def add_hook(
+            self, name: str, match_substring: bool = False, priority: int = 0
+        ) -> None:
+            # Кортеж (name, priority) сохранён прежним для обратной
+            # совместимости; match_substring фиксируется отдельно.
+            self.registered_hooks.append((name, priority))
+            if match_substring:
+                self.registered_hooks.append((name, "substring"))
+
+        def hook_method(
+            self,
+            member: Any,
+            handler: Any = None,
+            priority: int = 10,
+            before_filters: Any = (),
+            after_filters: Any = (),
+            before: Any = None,
+            after: Any = None,
+        ) -> Any:
+            """Зафиксировать Xposed-хук; вернуть дескриптор для unhook.
+
+            Дескриптор — прежний 4-кортеж (обратная совместимость); полный
+            набор аргументов фиксируется в ``hook_method_calls``.
+            """
+            handle = ("xposed", member, handler, priority)
             self.registered_xposed.append(handle)
+            self.hook_method_calls.append(
+                {
+                    "member": member,
+                    "handler": handler,
+                    "priority": priority,
+                    "before_filters": tuple(before_filters),
+                    "after_filters": tuple(after_filters),
+                    "before": before,
+                    "after": after,
+                }
+            )
             return handle
+
+        def hook_all_methods(
+            self, clazz: Any, method_name: str, handler: Any
+        ) -> list[Any]:
+            """Зафиксировать хук всех перегрузок метода; вернуть список."""
+            handle = ("xposed_all_methods", clazz, method_name, handler)
+            self.registered_hook_all.append(handle)
+            return [handle]
+
+        def hook_all_constructors(self, clazz: Any, handler: Any) -> list[Any]:
+            """Зафиксировать хук всех конструкторов; вернуть список."""
+            handle = ("xposed_all_constructors", clazz, handler)
+            self.registered_hook_all.append(handle)
+            return [handle]
 
         def unhook_method(self, handle: Any) -> None:
             """Зафиксировать снятие Xposed-хука."""
             self.unhooked.append(handle)
 
-        def add_hook(self, name: str, priority: int = 0) -> None:
-            self.registered_hooks.append((name, priority))
-
-        def add_menu_item(self, data: Any) -> None:
+        def add_menu_item(self, data: Any) -> Any:
+            """Зафиксировать пункт меню; вернуть его идентификатор."""
+            self._menu_seq += 1
+            item_id = getattr(data, "item_id", None) or self._menu_seq
             self.registered_menu_items.append(data)
+            self._menu_by_id[item_id] = data
+            return item_id
+
+        def remove_menu_item(self, item_id: Any) -> None:
+            """Зафиксировать удаление пункта меню по идентификатору."""
+            self.removed_menu_items.append(item_id)
+            data = self._menu_by_id.pop(item_id, None)
+            if data is not None and data in self.registered_menu_items:
+                self.registered_menu_items.remove(data)
 
         def get_setting(self, key: str, default: Any = None) -> Any:
             return self._settings.get(key, default)
 
-        def set_setting(self, key: str, value: Any) -> None:
+        def set_setting(
+            self, key: str, value: Any, reload_settings: bool = False
+        ) -> None:
             self._settings[key] = value
+
+        def export_settings(self) -> dict[str, Any]:
+            """Вернуть копию всех настроек плагина."""
+            return dict(self._settings)
+
+        def import_settings(
+            self, settings: dict[str, Any], reload_settings: bool = True
+        ) -> None:
+            """Заменить/дополнить настройки плагина переданными."""
+            self._settings.update(settings)
 
         def log(self, message: str) -> None:
             self.logged.append(message)
@@ -275,12 +366,21 @@ def log(message: str) -> None:
         pass
 
 
-def run_on_ui_thread(callback: Any) -> None:
-    """Выполнить callback в UI-потоке (на устройстве) или сразу (офлайн)."""
+def run_on_ui_thread(callback: Any, delay: int = 0) -> None:
+    """Выполнить callback в UI-потоке (на устройстве) или сразу (офлайн).
+
+    :param callback: вызываемый объект без аргументов.
+    :param delay: задержка в миллисекундах (на устройстве; офлайн
+        игнорируется — вызов выполняется немедленно).
+    """
     try:  # pragma: no cover - на устройстве
         from android_utils import run_on_ui_thread as _ui
 
-        _ui(callback)
+        try:
+            _ui(callback, delay)
+        except TypeError:
+            # Старые сборки SDK: run_on_ui_thread без аргумента задержки.
+            _ui(callback)
         return
     except Exception:
         callback()

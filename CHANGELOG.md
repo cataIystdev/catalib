@@ -7,6 +7,20 @@
 
 ## [Unreleased]
 
+### Добавлено
+
+- Полный паритет встраиваемого слоя `catalib.support` со всем публичным
+  SDK exteraGram (по официальной документации). Ядро `support.sdk`:
+  `HookResult` со всеми полями SDK (`strategy`, `request`, `response`,
+  `update`, `updates`, `params`); офлайн-`BasePlugin` доведён до полного
+  интерфейса (`export_settings`, `import_settings`,
+  `set_setting(reload_settings=)`, `remove_menu_item`,
+  `add_hook(match_substring=)`, `hook_method` с
+  `before_filters`/`after_filters`/`before`/`after`, `hook_all_methods`,
+  `hook_all_constructors`, `add_menu_item` возвращает идентификатор);
+  `run_on_ui_thread(delay=)`. Всё аддитивно — прежние сигнатуры и
+  поведение сохранены. См. ADR-0007.
+
 ## [0.2.0] - 2026-05-18
 
 ### Добавлено
