@@ -31,7 +31,7 @@ catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT]
 ## `catalib init`
 
 ```
-catalib init NAME [--id ID] [--dir DIR] [--author AUTHOR]
+catalib init NAME [--id ID] [--dir DIR] [--author AUTHOR] [--template T]
 ```
 
 | Аргумент/опция | По умолчанию | Назначение |
@@ -40,6 +40,7 @@ catalib init NAME [--id ID] [--dir DIR] [--author AUTHOR]
 | `--id` | из `NAME` | идентификатор плагина |
 | `--dir`, `-d` | `= ID` | каталог проекта |
 | `--author` | пусто | автор |
+| `--template`, `-t` | `hook` | шаблон: `hook`, `menu`, `minimal`, `settings` (см. [init](../cli/init.md)) |
 
 ## `catalib doctor`
 

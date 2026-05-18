@@ -19,6 +19,7 @@
 - [Доступ к SDK](guide/sdk-access.md)
 - [Class proxy](guide/class-proxy.md)
 - [Типизация и автодополнение](guide/typing.md)
+- [Тестирование плагина](guide/testing.md)
 - [Зависимости](guide/dependencies.md)
 
 ## CLI
