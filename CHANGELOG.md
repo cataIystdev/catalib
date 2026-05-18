@@ -9,6 +9,12 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.files` — обёртки `file_utils`: 7 getter'ов
+  каталогов (`get_plugins_dir`/`get_cache_dir`/…/`get_documents_dir`),
+  `ensure_dir_exists`, `list_dir`, `write_file`, `read_file`,
+  `delete_file`. Офлайн — настоящая работа с файловой системой во
+  временных каталогах (полные реализации, контракты SDK сохранены).
+  См. ADR-0007.
 - Модуль `catalib.support.android` — обёртки `android_utils`: `R`,
   `OnClickListener`, `OnLongClickListener`, `copy_to_clipboard`,
   ре-экспорт `log`/`run_on_ui_thread`. Офлайн-заглушки реально вызывают

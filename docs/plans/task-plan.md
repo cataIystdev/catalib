@@ -612,7 +612,7 @@
 - **Блокирует:** T-212.
 
 ### T-202: Модуль files (file_utils)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `files.py`: `get_plugins_dir`/`get_cache_dir`/
   `get_files_dir`/`get_images_dir`/`get_videos_dir`/`get_audios_dir`/
   `get_documents_dir`, `ensure_dir_exists`, `list_dir`, `write_file`,
