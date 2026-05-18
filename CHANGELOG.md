@@ -9,6 +9,10 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.classes` — FQN-константы общих Java-классов
+  Telegram/Android (`CHAT_ACTIVITY`, `MESSAGE_OBJECT`, `TLRPC`, …) и
+  словарь `COMMON_CLASSES`. Чистые данные, доступны всегда.
+  См. ADR-0007.
 - Модуль `catalib.support.proxy` — управляемый class proxy
   (`extera_utils.classes`): `Base`, `java_subclass`, `joverride`,
   `joverload`, `jmethod`, `jMVELmethod`, `jMVELoverride`, `jclassbuilder`,

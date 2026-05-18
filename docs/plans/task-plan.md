@@ -707,7 +707,7 @@
 - **Блокирует:** T-212.
 
 ### T-209: Модуль classes (FQN-константы)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `classes.py`: строковые FQN-константы общих Java-классов
   (`LAUNCH_ACTIVITY`, `PROFILE_ACTIVITY`, `CHAT_ACTIVITY`,
   `CHAT_MESSAGE_CELL`, `MESSAGE_OBJECT`, `ANDROID_UTILITIES`,
