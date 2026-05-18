@@ -15,6 +15,12 @@ from typing import Any
 from catalib.support.hooks import APP_EVENT_ATTR, HOOK_ATTR, AppEventSpec, HookSpec
 from catalib.support.sdk import BasePlugin
 from catalib.support.settings import SettingItem
+from catalib.support.xposed import (
+    XPOSED_ATTR,
+    XposedSpec,
+    register_xposed,
+    unregister_xposed,
+)
 
 #: Атрибут-маркер метода-обработчика пункта меню.
 MENU_ATTR = "__catalib_menu__"
@@ -118,12 +124,15 @@ class CatalibPlugin(BasePlugin):
     _catalib_menu: tuple[tuple[str, MenuSpec], ...] = ()
     #: Собранные обработчики событий приложения: list[(имя_метода, AppEventSpec)].
     _catalib_app_events: tuple[tuple[str, AppEventSpec], ...] = ()
+    #: Собранные Xposed-хуки: list[(имя_метода, XposedSpec)].
+    _catalib_xposed: tuple[tuple[str, XposedSpec], ...] = ()
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         hooks: list[tuple[str, HookSpec]] = []
         menu: list[tuple[str, MenuSpec]] = []
         app_events: list[tuple[str, AppEventSpec]] = []
+        xposed: list[tuple[str, XposedSpec]] = []
         for attr_name in dir(cls):
             member = getattr(cls, attr_name, None)
             if not callable(member):
@@ -137,12 +146,21 @@ class CatalibPlugin(BasePlugin):
             app_event_spec = getattr(member, APP_EVENT_ATTR, None)
             if isinstance(app_event_spec, AppEventSpec):
                 app_events.append((attr_name, app_event_spec))
+            xposed_spec = getattr(member, XPOSED_ATTR, None)
+            if isinstance(xposed_spec, XposedSpec):
+                xposed.append((attr_name, xposed_spec))
         cls._catalib_hooks = tuple(sorted(hooks))
         cls._catalib_menu = tuple(sorted(menu))
         cls._catalib_app_events = tuple(sorted(app_events, key=lambda pair: pair[0]))
+        cls._catalib_xposed = tuple(sorted(xposed, key=lambda pair: pair[0]))
+
+    #: Дескрипторы зарегистрированных Xposed-хуков (для on_plugin_unload).
+    #: Класс-умолчание — безопасный неизменяемый ``()``; экземпляр получает
+    #: новый список в ``on_plugin_load`` (нет общего мутабельного состояния).
+    _catalib_xposed_handles: tuple[Any, ...] | list[Any] = ()
 
     def on_plugin_load(self) -> None:
-        """Зарегистрировать объявленные хуки и меню, затем вызвать on_load."""
+        """Зарегистрировать хуки, меню и Xposed-хуки, затем вызвать on_load."""
         for _attr_name, spec in self._catalib_hooks:
             if spec.kind == "send_message":
                 self._register_send_message_hook(spec.priority)
@@ -150,7 +168,26 @@ class CatalibPlugin(BasePlugin):
                 self.add_hook(spec.name)
         for attr_name, menu_spec in self._catalib_menu:
             self._register_menu_item(attr_name, menu_spec)
+        handles: list[Any] = []
+        for attr_name, xposed_spec in self._catalib_xposed:
+            handle = register_xposed(self, attr_name, xposed_spec)
+            if handle is not None:
+                handles.append(handle)
+        self._catalib_xposed_handles = handles
         self.on_load()
+
+    def on_plugin_unload(self) -> None:
+        """Снять зарегистрированные Xposed-хуки и вызвать on_unload.
+
+        Прежнее поведение сохранено: без Xposed-хуков и без переопределения
+        ``on_unload`` метод фактически ничего не делает (как до 0.2.0, когда
+        ``on_plugin_unload`` не определялся вовсе). Подкласс, переопределивший
+        ``on_plugin_unload`` напрямую, продолжает работать как раньше.
+        """
+        for handle in getattr(self, "_catalib_xposed_handles", ()):
+            unregister_xposed(self, handle)
+        self._catalib_xposed_handles = []
+        self.on_unload()
 
     def on_app_event(self, event_type: Any) -> None:
         """Диспетчер событий жизненного цикла приложения.
@@ -215,3 +252,10 @@ class CatalibPlugin(BasePlugin):
 
     def on_load(self) -> None:
         """Переопределяемый хук пользовательской инициализации плагина."""
+
+    def on_unload(self) -> None:
+        """Переопределяемый хук пользовательской очистки плагина.
+
+        Вызывается из ``on_plugin_unload`` после автоснятия Xposed-хуков.
+        По умолчанию ничего не делает.
+        """

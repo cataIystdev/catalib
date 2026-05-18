@@ -19,6 +19,7 @@ _VENDOR_MODULES: tuple[tuple[str, str, bool], ...] = (
     ("catalib.support.sdk", "catalib/support/sdk.py", False),
     ("catalib.support.hooks", "catalib/support/hooks.py", False),
     ("catalib.support.settings", "catalib/support/settings.py", False),
+    ("catalib.support.xposed", "catalib/support/xposed.py", False),
     ("catalib.support.plugin", "catalib/support/plugin.py", False),
 )
 

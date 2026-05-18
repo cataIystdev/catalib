@@ -503,7 +503,7 @@
 - **Блокирует:** —
 
 ### T-105: Декларативные Xposed-хуки
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** модуль `support/xposed.py`: декоратор
   `xposed(class_fqn, method_name, *, phase="after", priority=10,
   is_constructor=False, arg_types=None, filters=())`; сбор спецификаций в
@@ -513,8 +513,10 @@
   `on_plugin_unload`; проброс `HookFilter` через `hook_filters`. Все ошибки
   рефлексии перехватываются и логируются (pitfall #7), кадр не падает.
 - **Артефакты:** `src/catalib/support/xposed.py`,
-  `src/catalib/support/plugin.py`, `tests/unit/support/test_xposed.py`,
-  `docs/components/support.md`.
+  `src/catalib/support/plugin.py`, `src/catalib/support/sdk.py`
+  (stub `hook_method`/`unhook_method`), `src/catalib/bundler/vendor.py`
+  (вендоринг нового модуля), `tests/unit/support/test_xposed.py`,
+  `CHANGELOG.md`. (Компонентная документация и ADR-0006 — сводно в T-106.)
 - **Критерий завершения:** офлайн против заглушек: `find_class`/`hook_method`
   вызываются корректно, `unhook` на выгрузке; фильтры доходят; тесты зелёные.
 - **Зависит от:** T-101

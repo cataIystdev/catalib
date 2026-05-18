@@ -18,6 +18,16 @@
   ручного перебора API клика. Расширения строго аддитивны: прежние вызовы
   `header`/`switch`/`text_input`/`text` формируют тот же `params`. См.
   ADR-0006.
+- `catalib.support.xposed`: декларативные Xposed-хуки методов Java —
+  декоратор `@xposed(class_fqn, method_name, *, phase, priority,
+  is_constructor, arg_types, filters)`. `CatalibPlugin` сам разрешает класс
+  через `find_class`, строит мост `MethodHook`/`MethodReplacement`,
+  регистрирует хук в `on_plugin_load` и снимает его в `on_plugin_unload`;
+  `HookFilter` пробрасывается через `hook_filters`. Ошибки рефлексии
+  логируются и не роняют загрузку (pitfall #7). Добавлен переопределяемый
+  `on_unload`. Прежнее поведение `on_plugin_unload` (его отсутствие)
+  сохранено для плагинов без Xposed. Модуль вендорится в собранный плагин.
+  См. ADR-0006.
 - `catalib.support`: декларативная обработка событий жизненного цикла
   приложения — декоратор `@hook.app_event` (бар-форма — все события; с
   аргументами `AppEvent` — выбранные) и диспетчер `CatalibPlugin.on_app_event`.

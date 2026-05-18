@@ -68,10 +68,22 @@ except Exception:  # pragma: no cover - ветка для обычного Pytho
             self._settings: dict[str, Any] = {}
             self.registered_hooks: list[Any] = []
             self.registered_menu_items: list[Any] = []
+            self.registered_xposed: list[Any] = []
+            self.unhooked: list[Any] = []
             self.logged: list[str] = []
 
         def add_on_send_message_hook(self, priority: int = 0) -> None:
             self.registered_hooks.append(("send_message", priority))
+
+        def hook_method(self, member: Any, hook: Any, priority: int = 10) -> Any:
+            """Зафиксировать Xposed-хук; вернуть дескриптор для unhook."""
+            handle = ("xposed", member, hook, priority)
+            self.registered_xposed.append(handle)
+            return handle
+
+        def unhook_method(self, handle: Any) -> None:
+            """Зафиксировать снятие Xposed-хука."""
+            self.unhooked.append(handle)
 
         def add_hook(self, name: str, priority: int = 0) -> None:
             self.registered_hooks.append((name, priority))
