@@ -807,7 +807,7 @@
 - **Блокирует:** T-217.
 
 ### T-217: Релиз 0.3.0
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** версия `0.2.0` → `0.3.0`; CHANGELOG `[Unreleased]` →
   `[0.3.0]`; самопроверка (`ruff`, `pytest`, `python -m build`,
   `twine check`); пересборка backrooms свежим catalib + прогон его
