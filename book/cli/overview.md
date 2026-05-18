@@ -12,6 +12,7 @@ catalib --help
 | [`catalib watch`](watch.md) | пересобирать при изменениях, опционально деплоить |
 | [`catalib init`](init.md) | создать шаблон модульного плагина |
 | [`catalib doctor`](doctor.md) | префлайт-проверка окружения (Python, adb, устройство, dev server, манифест) |
+| [`catalib logs`](logs.md) | logcat устройства, отфильтрованный по плагину |
 | `catalib stubs` | установить type-стабы SDK в `typings/` (см. [Типизация](../guide/typing.md)) |
 | `catalib version` | напечатать версию catalib |
 

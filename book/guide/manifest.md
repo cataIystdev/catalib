@@ -20,6 +20,7 @@ requirements = ["tinydb", "mpmath"]
 src = "src"
 entry = "plugin"
 out = "dist"
+vendor = "auto"
 ```
 
 ## Секция `[plugin]`

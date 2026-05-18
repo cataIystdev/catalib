@@ -29,6 +29,7 @@
 - [catalib watch](cli/watch.md)
 - [catalib init](cli/init.md)
 - [catalib doctor](cli/doctor.md)
+- [catalib logs](cli/logs.md)
 
 ## Деплой
 

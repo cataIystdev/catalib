@@ -69,3 +69,21 @@ def remove_forward(local_port: int, serial: str | None = None) -> None:
     """Снять ранее установленный проброс порта (ошибки игнорируются)."""
     with contextlib.suppress(AdbError):
         _run([*_adb_base(serial), "forward", "--remove", f"tcp:{local_port}"])
+
+
+def logcat(lines: int = 100, serial: str | None = None, *, clear: bool = False) -> str:
+    """Прочитать последние ``lines`` строк logcat устройства.
+
+    Команда совпадает с инструментом MCP ``adb_get_logs`` (единое
+    поведение): ``logcat -d -t <lines>``; при ``clear`` сначала
+    ``logcat -c`` (ошибка очистки не фатальна).
+
+    :param lines: сколько последних строк вернуть.
+    :param serial: серийный номер устройства (если их несколько).
+    :param clear: очистить буфер логов перед чтением.
+    :raises AdbError: если ``adb`` недоступен или устройство не отвечает.
+    """
+    if clear:
+        with contextlib.suppress(AdbError):
+            _run([*_adb_base(serial), "logcat", "-c"])
+    return _run([*_adb_base(serial), "logcat", "-d", "-t", str(lines)])

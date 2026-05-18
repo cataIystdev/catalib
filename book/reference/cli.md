@@ -59,6 +59,24 @@ catalib doctor [--project DIR] [--serial SERIAL] [--port PORT]
 отсутствие устройства/dev server — `warn`. Подробнее —
 [catalib doctor](../cli/doctor.md).
 
+## `catalib logs`
+
+```
+catalib logs [--project DIR] [--serial S] [--lines N] [--clear] [--all] [--filter TEXT]
+```
+
+| Опция | По умолчанию | Назначение |
+|-------|--------------|------------|
+| `--project`, `-p` | `.` | каталог проекта (источник `plugin_id`) |
+| `--serial` | — | серийный номер устройства |
+| `--lines`, `-n` | `100` | сколько последних строк logcat |
+| `--clear` | выкл. | очистить буфер логов перед чтением |
+| `--all` | выкл. | весь logcat, без фильтра |
+| `--filter` | `plugin_id` | своя подстрока фильтра |
+
+`adb logcat`, отфильтрованный по плагину (как MCP `adb_get_logs`). Код
+возврата `1` — ошибка `adb`. Подробнее — [catalib logs](../cli/logs.md).
+
 ## `catalib stubs`
 
 ```
