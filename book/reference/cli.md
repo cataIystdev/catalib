@@ -41,6 +41,23 @@ catalib init NAME [--id ID] [--dir DIR] [--author AUTHOR]
 | `--dir`, `-d` | `= ID` | каталог проекта |
 | `--author` | пусто | автор |
 
+## `catalib doctor`
+
+```
+catalib doctor [--project DIR] [--serial SERIAL] [--port PORT]
+```
+
+| Опция | По умолчанию | Назначение |
+|-------|--------------|------------|
+| `--project`, `-p` | `.` | каталог проекта |
+| `--serial` | — | серийный номер устройства |
+| `--port` | `42690` | локальный порт `adb forward` |
+
+Проверяет Python (≥ 3.11), `adb`, устройство, dev server и `catalib.toml`.
+Код возврата `1` только при `fail` (старый Python, битый манифест);
+отсутствие устройства/dev server — `warn`. Подробнее —
+[catalib doctor](../cli/doctor.md).
+
 ## `catalib stubs`
 
 ```

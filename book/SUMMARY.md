@@ -27,6 +27,7 @@
 - [catalib build](cli/build.md)
 - [catalib watch](cli/watch.md)
 - [catalib init](cli/init.md)
+- [catalib doctor](cli/doctor.md)
 
 ## Деплой
 

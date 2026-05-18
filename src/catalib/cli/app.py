@@ -13,6 +13,7 @@ import typer
 
 from catalib import __version__, check_for_updates
 from catalib.cli.build_command import build
+from catalib.cli.doctor_command import doctor
 from catalib.cli.init_command import init
 from catalib.cli.stubs_command import stubs
 from catalib.cli.watch_command import watch_command
@@ -28,6 +29,7 @@ app.command("build")(build)
 app.command("init")(init)
 app.command("watch")(watch_command)
 app.command("stubs")(stubs)
+app.command("doctor")(doctor)
 
 
 @app.command("version")
