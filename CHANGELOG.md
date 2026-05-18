@@ -9,6 +9,12 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.bulletins` — обёртка `ui.bulletin.BulletinHelper`
+  со всеми `show_*` (`show_info`/`show_error`/`show_success`/`show_simple`/
+  `show_two_line`/`show_with_button`/`show_undo`/`show_copied_to_clipboard`/
+  `show_link_copied`/`show_file_saved_to_gallery`/
+  `show_file_saved_to_downloads`) и `DURATION_*`. Офлайн — рекордер.
+  См. ADR-0007.
 - Модуль `catalib.support.dialogs` — обёртка `ui.alert.AlertDialogBuilder`
   с полным набором методов (заголовок/сообщение/пункты/кнопки/слушатели/
   внешний вид/прогресс/жизненный цикл) и константами (`ALERT_TYPE_*`,

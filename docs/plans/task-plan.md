@@ -675,7 +675,7 @@
 - **Блокирует:** T-212.
 
 ### T-207: Модуль bulletins (BulletinHelper)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `bulletins.py`: `BulletinHelper` со всеми `show_*`
   (`show_info`/`show_error`/`show_success`/`show_simple`/`show_two_line`/
   `show_with_button`/`show_undo`/`show_copied_to_clipboard`/
