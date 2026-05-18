@@ -9,6 +9,15 @@
 
 ### Добавлено
 
+- `catalib.support.settings`: полный паритет с `ui.settings` exteraGram —
+  компоненты `divider`, `selector`, `edit_text` (EditText), `custom` и
+  расширенные параметры существующих (`switch`/`text_input`/`text`):
+  `on_click`, `on_change`, `icon`, `accent`, `red`, `link_alias`,
+  `create_sub_fragment`, `multiline`, `max_length`, `mask`. Кликабельная
+  строка теперь первоклассна — `settings.text(..., on_click=...)` вместо
+  ручного перебора API клика. Расширения строго аддитивны: прежние вызовы
+  `header`/`switch`/`text_input`/`text` формируют тот же `params`. См.
+  ADR-0006.
 - `catalib.support.sdk`: безопасные импорты и офлайн-заглушки расширенного
   SDK exteraGram — `AppEvent`, `MethodHook`, `MethodReplacement`, `BaseHook`,
   `HookFilter`, `hook_filters`, `find_class`. Импортируются независимо от

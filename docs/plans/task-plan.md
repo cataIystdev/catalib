@@ -460,7 +460,7 @@
 - **Блокирует:** T-104, T-105, T-106.
 
 ### T-102: Полный набор компонентов настроек
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** добавить компоненты `divider`, `selector`, `edit_text`,
   `custom`; расширить `switch`/`text_input`/`text` keyword-параметрами SDK
   (`on_click`, `on_change`, `icon`, `accent`, `red`, `link_alias`,
@@ -469,9 +469,8 @@
   «незаданным» значением по умолчанию (в `params` не попадают, вызов SDK для
   старого кода идентичен прежнему).
 - **Артефакты:** `src/catalib/support/settings.py`,
-  `tests/unit/support/test_settings.py`, `docs/components/support.md`,
-  `docs/architecture/decisions/ADR-0006-paritet-support-sdk.md`,
-  `CHANGELOG.md`.
+  `tests/unit/support/test_settings.py`, `CHANGELOG.md`. (Компонентная
+  документация и ADR-0006 — сводно в T-106.)
 - **Критерий завершения:** все 8 компонентов строят корректные `params`;
   старые вызовы дают прежний результат; тесты зелёные.
 - **Зависит от:** —
