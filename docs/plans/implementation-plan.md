@@ -40,13 +40,36 @@ catalib даёт разработчику возможность писать п
   `sys.meta_path` в среде Chaquopy перед реализацией ядра.
 - Полное покрытие тестами и самопроверка сборки.
 
+#### Дополнительно в версии 0.2.0
+
+- `watchfiles` — опциональная зависимость; команды `build`/`init`/`version`
+  работают без неё (важно для установки в Termux/Pydroid на телефоне, где
+  Rust-бэкенд `watchfiles` собрать сложно). `watch` подключает её лениво и при
+  отсутствии даёт понятную ошибку с подсказкой по установке. См. ADR-0005.
+- Паритет `support`-слоя с публичным SDK exteraGram (ADR-0006):
+  - полный набор компонентов `ui.settings`: `header`, `divider`, `switch`,
+    `selector`, `input`, `edittext`, `text`, `custom` со всеми параметрами SDK
+    (`on_click`, `on_change`, `icon`, `accent`, `red`, `link_alias`,
+    `create_sub_fragment`, `multiline`, `max_length`, `mask`);
+  - кликабельная информационная строка как первоклассный API
+    (`settings.text(..., on_click=...)`) — устраняет ручную сборку клика в
+    плагинах;
+  - необязательные поля пункта меню: `item_id`, `condition`, `priority`;
+  - декларативная обработка событий жизненного цикла приложения
+    (`@hook.app_event`, диспетчер `on_app_event`, `AppEvent`);
+  - декларативные Xposed-хуки (`@xposed`) с авто-регистрацией и авто-`unhook`,
+    проброс `HookFilter`/`hook_filters`, безопасные импорты `find_class`,
+    `MethodHook`, `MethodReplacement`, `BaseHook`.
+  - Все изменения строго аддитивны: ранее существующие сигнатуры и поведение
+    сохранены (вендоринг `support` в сторонних плагинах не ломается).
+- Публикация пакета в PyPI и пуш в GitHub релиза 0.2.0.
+
 ### Не входит в объём
 
 - Графический интерфейс (только CLI).
 - Поддержка бинарных pip-зависимостей (exteraGram принимает только pure-Python
   wheels; ограничение наследуется как есть).
-- Публикация пакета в PyPI и настройка внешнего CI (вне границ задачи; локальные
-  lint/test обязательны).
+- Настройка внешнего CI (локальные lint/test обязательны).
 - Поддержка иных движков плагинов, кроме Python-движка exteraGram.
 
 ## 3. Архитектурное решение
@@ -113,7 +136,7 @@ graph LR
 |-----------|------------|--------|-------------|
 | Язык | Python | >=3.11 | Целевая среда Chaquopy — Python 3.11; единый язык инструмента и плагина. |
 | CLI-фреймворк | typer | >=0.25,<1 | Зрелый, типобезопасный поверх click, минимум шаблона. Актуальная версия 0.25.1 (апрель 2026). |
-| Слежение за файлами | watchfiles | >=1.1,<2 | Rust-бэкенд, кроссплатформенный, debounce, `stop_event`. Актуальная версия 1.1.1. |
+| Слежение за файлами | watchfiles | >=1.1,<2 | Rust-бэкенд, кроссплатформенный, debounce, `stop_event`. Актуальная версия 1.1.1. **Опциональная** зависимость (группа `watch`); нужна только команде `catalib watch`. См. ADR-0005. |
 | Сборка пакета | hatchling | >=1.29 | Современный стандартный build-backend PEP 517. Актуальная версия 1.29.0. |
 | Тесты | pytest | >=8.4 | Де-факто стандарт; ветка 8.4.x актуальна на 2026 год. |
 | Покрытие | pytest-cov | >=6 | Интеграция coverage с pytest. |
@@ -178,11 +201,21 @@ out = "dist"
 
 ### Публичный API мини-фреймворка (импортируется из плагина)
 
-- `from catalib.support import CatalibPlugin, hook, menu_item, setting` — базовый
-  класс плагина и декларативные примитивы.
+- `from catalib.support import CatalibPlugin, hook, menu_item, settings, xposed` —
+  базовый класс плагина и декларативные примитивы.
+- `settings` — фабрики элементов: `header`, `divider`, `switch`, `selector`,
+  `text_input`, `edit_text`, `text`, `custom` (полный паритет с `ui.settings`).
+- `hook` — `hook.send_message`, `hook.request(name)`, `hook.app_event(*events)`.
+- `xposed(class_fqn, method, *, phase, priority, is_constructor, arg_types,
+  filters)` — декларативный Xposed-хук с авто-регистрацией/`unhook`.
+- `from catalib.support import AppEvent, HookFilter, hook_filters, MethodHook,
+  MethodReplacement, BaseHook, find_class` — безопасные ре-экспорты SDK с
+  офлайн-заглушками.
 - `from catalib.support.sdk import ...` — безопасные импорты SDK с заглушками.
 
-Точные сигнатуры фиксируются в `docs/components/` по мере реализации.
+Точные сигнатуры фиксируются в `docs/components/` по мере реализации. Все
+расширения 0.2.0 аддитивны: прежние сигнатуры (`settings.switch`,
+`settings.text_input`, `settings.text`, `menu_item`, `hook.*`) сохранены.
 
 ## 7. Модель данных
 
@@ -234,9 +267,17 @@ out = "dist"
 ## 11. Развёртывание
 
 Артефакт — pip-пакет (wheel + sdist) через `hatchling`. Локальная установка:
-`pip install -e ".[dev]"`. Контейнеризация не требуется (CLI-инструмент).
-Внешний CI вне объёма; обязательная локальная самопроверка: `make lint`,
-`make test`, успешная сборка примера, ручная проверка зонда на устройстве.
+`pip install -e ".[dev]"`. На телефоне (Termux/Pydroid) — `pip install catalib`
+без группы `watch` (без Rust-зависимости `watchfiles`). Контейнеризация не
+требуется (CLI-инструмент). Внешний CI вне объёма; обязательная локальная
+самопроверка: `make lint`, `make test`, успешная сборка примера, ручная
+проверка зонда на устройстве.
+
+Публикация версии 0.2.0: сборка `python -m build` (группа `publish`), выгрузка
+`twine` в PyPI, git-тег `vX.Y.Z`, пуш в GitHub. Учётные данные PyPI берутся из
+`~/.pypirc` или переменных окружения `TWINE_*`; при их отсутствии публикация
+не выполняется (артефакты собираются, шаг выгрузки требует ручного ввода
+токена).
 
 ## 12. Риски и допущения
 
@@ -284,7 +325,9 @@ out = "dist"
 ## 16. Связи
 
 - Связанные ADR: ADR-0001 (модульный монолит), ADR-0002 (механизм bundler +
-  meta_path), ADR-0003 (мини-фреймворк поверх SDK).
+  meta_path), ADR-0003 (мини-фреймворк поверх SDK), ADR-0004 (деплой через
+  dev server), ADR-0005 (опциональная `watchfiles`), ADR-0006 (паритет
+  support-слоя с SDK exteraGram).
 - Связанные документы: `docs/architecture/overview.md`, `docs/plans/task-plan.md`,
   `docs/components/`.
 - Внешние ссылки: документация exteraGram `https://plugins.exteragram.app/docs`.

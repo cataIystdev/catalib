@@ -423,6 +423,146 @@
 
 ---
 
+## Раздел 11. Версия 0.2.0: опциональный watch и паритет с SDK
+
+> Жёсткое требование раздела: **не сломать ничего**. Слой `support` вендорится
+> в сторонних плагинах (например backrooms). Все изменения строго аддитивны;
+> прежние публичные сигнатуры и поведение сохраняются. Проверяется прогоном
+> тестов catalib и пересборкой + тестами backrooms.
+
+### T-100: watchfiles как опциональная зависимость
+- **Статус:** pending
+- **Описание:** убрать `watchfiles` из обязательных `dependencies`, вынести в
+  опциональную группу `watch` (и добавить в `dev`); ленивый импорт
+  `watchfiles` внутри тела `watch_command` с понятной ошибкой и подсказкой
+  `pip install "catalib[watch]"` при отсутствии. `build`/`init`/`version`
+  обязаны работать без `watchfiles`.
+- **Артефакты:** `pyproject.toml`, `src/catalib/cli/watch_command.py`,
+  `tests/unit/cli/test_watch_optional.py`, `docs/components/cli.md`,
+  `docs/architecture/decisions/ADR-0005-watchfiles-optional.md`, `CHANGELOG.md`.
+- **Критерий завершения:** `catalib build`/`version` работают при
+  отсутствии `watchfiles`; `catalib watch` без неё даёт понятную ошибку;
+  тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** —
+
+### T-101: Безопасные импорты и заглушки расширенного SDK
+- **Статус:** pending
+- **Описание:** в `support.sdk` добавить независимые `try/except`-импорты и
+  офлайн-заглушки `AppEvent`, `MethodHook`, `MethodReplacement`, `BaseHook`,
+  `HookFilter`, `hook_filters`, `find_class`. Импорты обособлены: отсутствие
+  нового имени не должно сбрасывать `SDK_AVAILABLE` и не ломать импорт ядра.
+- **Артефакты:** `src/catalib/support/sdk.py`,
+  `tests/unit/support/test_sdk.py` (дополнение).
+- **Критерий завершения:** офлайн — заглушки с тем же интерфейсом; ядро
+  (`BasePlugin` и пр.) не затронуто; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-104, T-105, T-106.
+
+### T-102: Полный набор компонентов настроек
+- **Статус:** pending
+- **Описание:** добавить компоненты `divider`, `selector`, `edit_text`,
+  `custom`; расширить `switch`/`text_input`/`text` keyword-параметрами SDK
+  (`on_click`, `on_change`, `icon`, `accent`, `red`, `link_alias`,
+  `create_sub_fragment`, `multiline`, `max_length`, `mask`). Прежние
+  позиционные сигнатуры неизменны; новые параметры — только keyword с
+  «незаданным» значением по умолчанию (в `params` не попадают, вызов SDK для
+  старого кода идентичен прежнему).
+- **Артефакты:** `src/catalib/support/settings.py`,
+  `tests/unit/support/test_settings.py`, `docs/components/support.md`,
+  `docs/architecture/decisions/ADR-0006-paritet-support-sdk.md`,
+  `CHANGELOG.md`.
+- **Критерий завершения:** все 8 компонентов строят корректные `params`;
+  старые вызовы дают прежний результат; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-107.
+
+### T-103: Необязательные поля пункта меню
+- **Статус:** pending
+- **Описание:** добавить в `menu_item`/`MenuSpec` keyword-поля `item_id`,
+  `condition`, `priority`; пробрасывать в `MenuItemData` только когда заданы
+  (старый вызов формирует тот же `MenuItemData`, что и раньше).
+- **Артефакты:** `src/catalib/support/plugin.py`,
+  `tests/unit/support/test_plugin.py` (дополнение), `docs/components/support.md`.
+- **Критерий завершения:** новые поля доходят до `MenuItemData`; прежний
+  вызов неизменен; тесты зелёные.
+- **Зависит от:** —
+- **Блокирует:** —
+
+### T-104: Декларативная обработка событий приложения
+- **Статус:** pending
+- **Описание:** декоратор `hook.app_event(*events)` (без аргументов — все
+  события), `AppEventSpec`, сбор в `__init_subclass__`, диспетчер
+  `CatalibPlugin.on_app_event(event_type)` с фильтрацией по событиям. Прямое
+  переопределение `on_app_event` подклассом по-прежнему работает.
+- **Артефакты:** `src/catalib/support/hooks.py`,
+  `src/catalib/support/plugin.py`, `tests/unit/support/test_app_event.py`,
+  `docs/components/support.md`.
+- **Критерий завершения:** помеченные методы вызываются на нужных событиях;
+  существующая регистрация хуков/меню не затронута; тесты зелёные.
+- **Зависит от:** T-101
+- **Блокирует:** —
+
+### T-105: Декларативные Xposed-хуки
+- **Статус:** pending
+- **Описание:** модуль `support/xposed.py`: декоратор
+  `xposed(class_fqn, method_name, *, phase="after", priority=10,
+  is_constructor=False, arg_types=None, filters=())`; сбор спецификаций в
+  `__init_subclass__`; авто-регистрация в `on_plugin_load`
+  (`find_class` → `getDeclaredMethod`/`getDeclaredConstructor` → мост
+  `MethodHook`/`MethodReplacement` → `hook_method`), авто-`unhook` в
+  `on_plugin_unload`; проброс `HookFilter` через `hook_filters`. Все ошибки
+  рефлексии перехватываются и логируются (pitfall #7), кадр не падает.
+- **Артефакты:** `src/catalib/support/xposed.py`,
+  `src/catalib/support/plugin.py`, `tests/unit/support/test_xposed.py`,
+  `docs/components/support.md`.
+- **Критерий завершения:** офлайн против заглушек: `find_class`/`hook_method`
+  вызываются корректно, `unhook` на выгрузке; фильтры доходят; тесты зелёные.
+- **Зависит от:** T-101
+- **Блокирует:** —
+
+### T-106: Публичный API и документация support
+- **Статус:** pending
+- **Описание:** дополнить `support/__init__.py` (`__all__`) новыми именами,
+  сохранив прежние; синхронизировать `docs/components/support.md`,
+  `docs/architecture/overview.md`, `docs/README.md`; завершить ADR-0005/0006.
+- **Артефакты:** `src/catalib/support/__init__.py`, `docs/components/*`,
+  `docs/architecture/*`, `docs/README.md`.
+- **Критерий завершения:** публичный импорт даёт новые и прежние имена;
+  тест границы сред зелёный; документация соответствует коду.
+- **Зависит от:** T-101, T-102, T-103, T-104, T-105
+- **Блокирует:** T-108.
+
+### T-107: Перевод backrooms на первоклассный кликабельный API
+- **Статус:** pending
+- **Описание:** пересобрать backrooms свежесобранным catalib и прогнать его
+  тесты (доказательство обратной совместимости — «ничего не сломано»). При
+  зелёных тестах упростить `backrooms/src/settings/schema.py`: заменить ручную
+  сборку клика на `settings.text(..., on_click=...)` + `settings.divider()`,
+  пересобрать и снова прогнать тесты backrooms.
+- **Артефакты:** `backrooms/src/settings/schema.py`, пересобранный
+  `backrooms/dist/backrooms.py`, обновлённая память проекта.
+- **Критерий завершения:** тесты backrooms зелёные на старом коде (совмести-
+  мость) и после перевода на новый API; ручной сбор клика удалён.
+- **Зависит от:** T-102, T-106
+- **Блокирует:** T-108.
+
+### T-108: Релиз 0.2.0
+- **Статус:** pending
+- **Описание:** поднять версию `0.1.0` → `0.2.0` (`pyproject.toml`,
+  `__init__.py`), перенести `CHANGELOG.md` `[Unreleased]` → `[0.2.0]`,
+  финальная самопроверка (`ruff`, `pytest`, `python -m build`), git-тег
+  `v0.2.0`, пуш `origin/main` и тега; публикация в PyPI при наличии
+  учётных данных, иначе остановиться и спросить пользователя.
+- **Артефакты:** `pyproject.toml`, `src/catalib/__init__.py`, `CHANGELOG.md`,
+  git-тег, артефакты `dist/`.
+- **Критерий завершения:** всё зелёное; релиз помечен и запушен; пакет
+  опубликован либо явно отложен с вопросом пользователю.
+- **Зависит от:** T-100, T-106, T-107
+- **Блокирует:** —
+
+---
+
 ## Карта зависимостей
 
 ```mermaid
@@ -454,4 +594,17 @@ graph TD
   T040 --> T080
   T080 --> T081
   T081 --> T082 --> T083
+  T083 --> T100
+  T083 --> T101 --> T104
+  T101 --> T105
+  T101 --> T106
+  T083 --> T102 --> T106
+  T083 --> T103 --> T106
+  T104 --> T106
+  T105 --> T106
+  T102 --> T107
+  T106 --> T107
+  T100 --> T108
+  T106 --> T108
+  T107 --> T108
 ```
