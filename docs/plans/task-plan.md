@@ -447,7 +447,7 @@
 - **Блокирует:** —
 
 ### T-101: Безопасные импорты и заглушки расширенного SDK
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** в `support.sdk` добавить независимые `try/except`-импорты и
   офлайн-заглушки `AppEvent`, `MethodHook`, `MethodReplacement`, `BaseHook`,
   `HookFilter`, `hook_filters`, `find_class`. Импорты обособлены: отсутствие
