@@ -795,7 +795,7 @@
 - **Блокирует:** T-217.
 
 ### T-216: Руководство book/ под 0.2.0 и 0.3.0
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** обновить/добавить страницы `book/` (sdk-access, settings,
   hooks, menu-items, plugin-class, reference/api, новые страницы по
   class-proxy, client/android/files/ui-helpers/reflection/formatting),

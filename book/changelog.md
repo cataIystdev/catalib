@@ -20,3 +20,14 @@
 - Корректный API меню SDK (`MenuItemData(menu_type=..., on_click=...)`),
   отказ от нестандартного `__min_version__`.
 - Пример `exteraToolbox` (44 модуля) и полная документация (эта книга).
+- **0.2.0**: `watchfiles` опционален (`pip install "catalib[watch]"`,
+  работает на телефоне); паритет support-слоя с SDK — полные настройки,
+  кликабельная строка (`settings.text(on_click=)`), поля меню
+  `item_id`/`condition`/`priority`, `@hook.app_event`, декларативные
+  Xposed-хуки `@xposed` (ADR-0005, ADR-0006).
+- **0.3.0**: полный паритет `catalib.support` со **всем** публичным SDK
+  exteraGram — модули `android`/`client`/`files`/`reflection`/
+  `formatting`/`dialogs`/`bulletins`/`proxy` (class proxy)/`classes`,
+  карта хук-методов `pre_request`/`post_request`/`on_update`/
+  `on_updates`, довод настроек и ядра до полноты; всё строго аддитивно
+  (ADR-0007).

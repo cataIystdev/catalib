@@ -22,7 +22,8 @@ exteraGram создаёт экземпляр плагина и вызывает 
 
 1. регистрирует все методы, помеченные [`@hook.*`](hooks.md);
 2. регистрирует все [пункты меню](menu-items.md);
-3. вызывает `self.on_load()` — ваш хук инициализации.
+3. регистрирует [Xposed-хуки](hooks.md#xposed-хуки) `@xposed`;
+4. вызывает `self.on_load()` — ваш хук инициализации.
 
 Поэтому **не переопределяйте `on_plugin_load`** — переопределяйте
 `on_load`:
@@ -34,7 +35,27 @@ class MyPlugin(CatalibPlugin):
         self.store = MyStore(self.get_setting("path", "/default"))
 ```
 
-Если нужен код выгрузки — определите `on_plugin_unload` (метод SDK).
+`CatalibPlugin` также реализует диспетчеры, маршрутизирующие вызовы SDK
+в помеченные методы: `on_app_event` (см. `@hook.app_event`),
+`pre_request_hook`/`post_request_hook`/`on_update_hook`/
+`on_updates_hook` (см. карту хук-методов). Их прямое переопределение в
+подклассе по-прежнему работает (перекрывает диспетчер по MRO).
+
+### Выгрузка
+
+`on_plugin_unload()` реализован catalib: снимает зарегистрированные
+Xposed-хуки и вызывает `self.on_unload()` — ваш хук очистки. Для кода
+выгрузки переопределяйте **`on_unload`** (не `on_plugin_unload`):
+
+```python
+class MyPlugin(CatalibPlugin):
+    def on_unload(self) -> None:
+        self.store.close()
+```
+
+Без Xposed-хуков и без `on_unload` выгрузка — no-op (поведение как до
+0.2.0, когда `on_plugin_unload` не определялся). Прямое переопределение
+`on_plugin_unload` тоже поддерживается.
 
 ## Настройки
 

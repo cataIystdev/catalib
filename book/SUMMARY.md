@@ -17,6 +17,7 @@
 - [Пункты меню](guide/menu-items.md)
 - [Настройки](guide/settings.md)
 - [Доступ к SDK](guide/sdk-access.md)
+- [Class proxy](guide/class-proxy.md)
 - [Зависимости](guide/dependencies.md)
 
 ## CLI

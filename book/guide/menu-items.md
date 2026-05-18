@@ -17,7 +17,8 @@ class P(CatalibPlugin):
 ## Сигнатура декоратора
 
 ```python
-menu_item(text, menu_type="DRAWER_MENU", icon="", subtext="")
+menu_item(text, menu_type="DRAWER_MENU", icon="", subtext="",
+          *, item_id="", condition=None, priority=0)
 ```
 
 | Параметр | Назначение |
@@ -26,6 +27,13 @@ menu_item(text, menu_type="DRAWER_MENU", icon="", subtext="")
 | `menu_type` | тип меню, одно из значений ниже |
 | `icon` | необязательное имя drawable-иконки (например `msg_info`) |
 | `subtext` | необязательная подпись под текстом |
+| `item_id` | необязательный стабильный идентификатор пункта |
+| `condition` | необязательный предикат показа пункта |
+| `priority` | необязательный приоритет (0 — не передаётся в SDK) |
+
+Новые поля (`item_id`/`condition`/`priority`) — keyword-only и
+пробрасываются в `MenuItemData` только когда заданы: прежний вызов
+формирует тот же `MenuItemData`, что и раньше.
 
 Неверный `menu_type` или пустой `text` приводят к `ValueError` ещё на
 этапе импорта плагина — ошибка обнаруживается сразу.
