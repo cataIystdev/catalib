@@ -637,7 +637,7 @@
 - **Блокирует:** T-212.
 
 ### T-204: Модуль client (client_utils)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `client.py`: 8 констант очередей, `run_on_queue`
   (офлайн — синхронный вызов), `get_queue_by_name`, `send_request`,
   `send_text`/`send_photo`/`send_document`/`send_video`/`send_audio`/

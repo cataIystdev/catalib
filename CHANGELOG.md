@@ -9,6 +9,12 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.client` — обёртки `client_utils`: 8 констант
+  очередей, `run_on_queue` (офлайн — синхронный вызов),
+  `get_queue_by_name`, `send_request`, `send_text`/`send_photo`/
+  `send_document`/`send_video`/`send_audio`/`send_message`,
+  `edit_message` (валидирует `parse_mode`), 17 геттеров контроллеров,
+  `NotificationCenterDelegate`. См. ADR-0007.
 - Модуль `catalib.support.reflection` — обёртки `hook_utils`:
   `find_class` (ре-экспорт), `get_private_field`, `set_private_field`,
   `get_static_private_field`, `set_static_private_field`. Офлайн —
