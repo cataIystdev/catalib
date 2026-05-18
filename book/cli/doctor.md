@@ -51,7 +51,7 @@ catalib doctor --project . || exit 1
 ```bash
 $ catalib doctor
 [OK  ] Python: 3.11.9 (>= 3.11)
-[OK  ] catalib: версия 0.3.1
+[OK  ] catalib: версия 0.3.2
 [OK  ] adb: найден в PATH
 [OK  ] Устройство: подключено: emulator-5554
 [OK  ] Dev server: доступен на порту 42690
@@ -64,7 +64,7 @@ $ catalib doctor
 ```bash
 $ catalib doctor
 [OK  ] Python: 3.11.9 (>= 3.11)
-[OK  ] catalib: версия 0.3.1
+[OK  ] catalib: версия 0.3.2
 [WARN] adb: не найден в PATH
         -> установите Android platform-tools (нужно только для деплоя)
 [WARN] Устройство: пропущено — нет adb

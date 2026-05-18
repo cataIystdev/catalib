@@ -34,3 +34,7 @@
 - **0.3.1**: помодульный tree-shaking вендоренного `catalib` — в сборку
   попадает только используемое (≈ −34% объёма `catalib`-части), опция
   `[build] vendor = auto|full`, консервативный fallback (ADR-0008).
+- **0.3.2**: комфорт разработки — типизация PEP 561 + поставка SDK-стабов
+  и `catalib stubs` (ADR-0009); `catalib doctor` (префлайт-диагностика);
+  шаблоны `catalib init -t` и модуль `catalib.testing`; `catalib logs`;
+  решение по `intents` подтверждено эмпирически (ADR-0010).
