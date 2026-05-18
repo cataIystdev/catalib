@@ -73,10 +73,18 @@ class BundleResult:
     :param text: содержимое выходного файла ``<plugin_id>.py``.
     :param filename: имя выходного файла.
     :param requirements: итоговый список зависимостей.
-    :param module_count: число встроенных модулей (включая корневой).
+    :param module_count: число встроенных модулей плагина (включая корневой).
+    :param vendored_kept: вшитые модули ``catalib`` (после отбора).
+    :param vendored_pruned: отсечённые модули ``catalib``.
+    :param vendor_full: вендоринг выполнен полностью (без отбора).
+    :param vendor_warnings: причины полного вендоринга/замечания.
     """
 
     text: str
     filename: str
     requirements: tuple[str, ...]
     module_count: int
+    vendored_kept: tuple[str, ...] = ()
+    vendored_pruned: tuple[str, ...] = ()
+    vendor_full: bool = False
+    vendor_warnings: tuple[str, ...] = ()

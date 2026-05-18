@@ -29,7 +29,7 @@ _ALLOWED_PLUGIN_KEYS = (
     "sdk_version",
     "requirements",
 )
-_ALLOWED_BUILD_KEYS = ("src", "entry", "out")
+_ALLOWED_BUILD_KEYS = ("src", "entry", "out", "vendor")
 
 
 def _ensure_str(table: str, key: str, value: Any) -> str:
@@ -53,6 +53,7 @@ def _parse_build(raw: Any) -> BuildConfig:
         src=_ensure_str("build", "src", raw.get("src", defaults.src)),
         entry=_ensure_str("build", "entry", raw.get("entry", defaults.entry)),
         out=_ensure_str("build", "out", raw.get("out", defaults.out)),
+        vendor=_ensure_str("build", "vendor", raw.get("vendor", defaults.vendor)),
     )
 
 

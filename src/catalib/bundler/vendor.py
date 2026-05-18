@@ -41,19 +41,30 @@ def _read(resource_path: str) -> str:
 
 
 def vendored_modules() -> tuple[SourceModule, ...]:
-    """Вернуть встраиваемые модули ``catalib.support`` как :class:`SourceModule`.
+    """Вернуть ВСЕ встраиваемые модули ``catalib`` как :class:`SourceModule`.
 
-    ``relname`` здесь равен полному имени модуля (без префикса плагина);
-    ``relpath`` используется как читаемый origin для трейсбеков.
+    ``relname`` равен полному имени модуля (без префикса плагина);
+    ``relpath`` используется как читаемый origin для трейсбеков. Это полный
+    набор; отбор фактически используемого делает
+    :mod:`catalib.bundler.treeshake`.
     """
-    modules = []
-    for fullname, resource_path, is_package in _VENDOR_MODULES:
-        modules.append(
-            SourceModule(
-                relname=fullname,
-                relpath=resource_path,
-                source=_read(resource_path),
-                is_package=is_package,
-            )
+    return tuple(
+        SourceModule(
+            relname=fullname,
+            relpath=resource_path,
+            source=_read(resource_path),
+            is_package=is_package,
         )
-    return tuple(modules)
+        for fullname, resource_path, is_package in _VENDOR_MODULES
+    )
+
+
+def all_vendor_modules() -> dict[str, SourceModule]:
+    """Карта «полное имя модуля -> :class:`SourceModule`» по всему вендору."""
+    return {module.relname: module for module in vendored_modules()}
+
+
+#: Имя пакета-фасада мини-фреймворка.
+SUPPORT_PACKAGE = "catalib.support"
+#: Имя корневого вендоренного пакета.
+ROOT_PACKAGE = "catalib"

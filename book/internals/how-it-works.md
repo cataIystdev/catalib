@@ -15,11 +15,18 @@
    манифеста и модулей, отклоняет бинарные пакеты.
 4. **sourcemap** — `build_source_map`: вычисляет origin каждого модуля
    для `linecache`/трейсбеков.
-5. **vendor** — `vendored_modules`: читает исходники `catalib.support`
-   (+минимальный `catalib`) из установленного пакета.
-6. **compiler** — `compile_plugin`: собирает выходной текст, проверяет
-   синтаксис и AST-валидность метаданных.
-7. запись `<plugin_id>.py` и `<plugin_id>.plugin`.
+5. **vendor** — `vendored_modules`/`all_vendor_modules`: исходники
+   `catalib.support` (+минимальный `catalib`) из установленного пакета.
+6. **treeshake** — `plan_vendor` (модуль `bundler/treeshake.py`):
+   помодульный отбор используемых плагином модулей `catalib` и их
+   транзитивных зависимостей; для `catalib.support` — генерация
+   урезанного `__init__`. Режим из `[build] vendor` (`auto`/`full`);
+   при неоднозначных импортах — полный вендоринг с предупреждением.
+   См. ADR-0008.
+7. **compiler** — `compile_plugin`: собирает выходной текст из модулей
+   плагина и отобранного `catalib`, проверяет синтаксис и AST-валидность
+   метаданных.
+8. запись `<plugin_id>.py` и `<plugin_id>.plugin`.
 
 ## Структура выходного файла
 

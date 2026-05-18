@@ -29,14 +29,21 @@ catalib build [--project DIR] [--check]
 ```
 $ catalib build --project hello
 Собран плагин 'hello': 4 модулей
+Вендоринг catalib: отобрано 7, отсечено 9
 Файлы: hello/dist/hello.py, hello/dist/hello.plugin
 ```
+
+Строка «Вендоринг catalib» показывает результат
+[помодульного отбора](../guide/manifest.md) (tree-shaking): сколько
+модулей `catalib` вшито и сколько отсечено. При `vendor = "full"` или
+неоднозначных импортах — `Вендоринг catalib: полный (...)` с причиной.
 
 С зависимостями:
 
 ```
 Собран плагин 'toolbox': 44 модулей
 Зависимости: tinydb, mpmath
+Вендоринг catalib: отобрано 7, отсечено 9
 Файлы: example/dist/toolbox.py, example/dist/toolbox.plugin
 ```
 

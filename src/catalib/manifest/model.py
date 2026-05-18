@@ -34,11 +34,19 @@ class BuildConfig:
     :param entry: имя модуля внутри ``src`` с подклассом точки входа плагина
         (без расширения, точечная нотация для вложенности).
     :param out: каталог, куда складывается собранный ``<plugin_id>.py``.
+    :param vendor: режим вендоринга ``catalib``: ``"auto"`` (по умолчанию) —
+        вшивать только используемые плагином модули ``catalib.*`` и их
+        транзитивные зависимости; ``"full"`` — вшивать весь ``catalib.support``
+        (страховка для динамических импортов SDK).
     """
 
     src: str = "src"
     entry: str = "plugin"
     out: str = "dist"
+    vendor: str = "auto"
+
+    #: Допустимые значения ``vendor``.
+    VENDOR_MODES = ("auto", "full")
 
     def __post_init__(self) -> None:
         for name, value in (("src", self.src), ("entry", self.entry), ("out", self.out)):
@@ -49,6 +57,10 @@ class BuildConfig:
                 raise ManifestError(
                     f"build.{name} должен быть относительным путём без пробелов по краям"
                 )
+        if self.vendor not in self.VENDOR_MODES:
+            raise ManifestError(
+                f"build.vendor должен быть одним из {self.VENDOR_MODES}, получено {self.vendor!r}"
+            )
 
 
 @dataclass(frozen=True, slots=True)

@@ -34,6 +34,15 @@ def build(
     )
     if bundle.requirements:
         typer.echo(f"Зависимости: {', '.join(bundle.requirements)}")
+    if bundle.vendor_full:
+        typer.echo(f"Вендоринг catalib: полный ({len(bundle.vendored_kept)} модулей)")
+        for warning in bundle.vendor_warnings:
+            typer.secho(f"  причина: {warning}", fg=typer.colors.YELLOW)
+    else:
+        typer.echo(
+            f"Вендоринг catalib: отобрано {len(bundle.vendored_kept)}, "
+            f"отсечено {len(bundle.vendored_pruned)}"
+        )
     if check:
         typer.echo("Проверка пройдена (файлы не записаны, --check).")
     else:

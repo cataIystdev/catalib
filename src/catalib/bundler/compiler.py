@@ -59,22 +59,20 @@ def _requirements_block(requirements: tuple[str, ...]) -> str:
     return f"__requirements__ = [{items}]\n"
 
 
-def _sources_block(manifest: PluginManifest, tree: SourceTree) -> str:
+def _sources_block(manifest: PluginManifest, tree: SourceTree, vendor_modules: tuple) -> str:
     """Сформировать таблицу встроенных исходников и имя точки входа.
 
     Таблица включает модули плагина (под именами ``<plugin_id>.*``) и
-    вендоренные модули ``catalib.support`` (под их настоящими именами), так
-    как на устройстве пакет ``catalib`` не установлен.
+    отобранные вендоренные модули ``catalib`` (под их настоящими именами),
+    так как на устройстве пакет ``catalib`` не установлен.
     """
-    from catalib.bundler.vendor import vendored_modules
-
     origins = build_source_map(manifest.id, tree)
     entries = []
     for module in tree.modules:
         fullname = runtime_fullname(manifest.id, module.relname)
         origin = origins[fullname]
         entries.append(f"    {fullname!r}: ({module.source!r}, {module.is_package!r}, {origin!r}),")
-    for module in vendored_modules():
+    for module in vendor_modules:
         origin = f"<catalib-vendor>/{module.relpath}"
         entries.append(
             f"    {module.relname!r}: ({module.source!r}, {module.is_package!r}, {origin!r}),"
@@ -93,9 +91,11 @@ def compile_plugin(manifest: PluginManifest, tree: SourceTree) -> BundleResult:
     :raises CompilerError: если результат синтаксически невалиден или
         метаданные не проходят AST-проверку.
     """
+    from catalib.bundler.treeshake import plan_vendor
     from catalib.runtime import get_bootstrap_source
 
     requirements = merge_requirements(manifest.requirements, tree.modules)
+    plan = plan_vendor(tree, manifest.build.vendor)
 
     parts = [
         _HEADER,
@@ -104,7 +104,7 @@ def compile_plugin(manifest: PluginManifest, tree: SourceTree) -> BundleResult:
         "\n",
         get_bootstrap_source(),
         "\n",
-        _sources_block(manifest, tree),
+        _sources_block(manifest, tree, plan.modules),
         "\n",
         # Идентификатор передаётся литералом: к этому моменту глобальный
         # __name__ уже перетёрт литералом метаданных __name__.
@@ -124,4 +124,8 @@ def compile_plugin(manifest: PluginManifest, tree: SourceTree) -> BundleResult:
         filename=manifest.output_filename,
         requirements=requirements,
         module_count=len(tree.modules),
+        vendored_kept=plan.kept,
+        vendored_pruned=plan.pruned,
+        vendor_full=plan.full,
+        vendor_warnings=plan.warnings,
     )
