@@ -9,6 +9,15 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.proxy` — управляемый class proxy
+  (`extera_utils.classes`): `Base`, `java_subclass`, `joverride`,
+  `joverload`, `jmethod`, `jMVELmethod`, `jMVELoverride`, `jclassbuilder`,
+  `jfield`, `jgetmethod`, `jsetmethod`, `jconstructor`, `jpreconstructor`,
+  `PyObj`, `J`/`JavaHelper`/`ClassHelper`. На устройстве полностью
+  ре-экспортируется настоящий DSL; офлайн — функциональные заглушки
+  (декларации классов-проксей импортируются и инстанцируются, `jfield`
+  как атрибут с default, порядок pre/init/ctor/post соблюдён,
+  `J`/`PyObj` проксируют объект). См. ADR-0007.
 - Модуль `catalib.support.bulletins` — обёртка `ui.bulletin.BulletinHelper`
   со всеми `show_*` (`show_info`/`show_error`/`show_success`/`show_simple`/
   `show_two_line`/`show_with_button`/`show_undo`/`show_copied_to_clipboard`/

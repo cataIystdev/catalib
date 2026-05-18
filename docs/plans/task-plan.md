@@ -688,7 +688,7 @@
 - **Блокирует:** T-212.
 
 ### T-208: Модуль proxy (extera_utils.classes, class proxy)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `proxy.py`: безопасный импорт и офлайн-заглушки всей
   поверхности class-proxy: `Base`, `java_subclass`, `joverride`,
   `joverload`, `jmethod`, `jMVELmethod`, `jMVELoverride`, `jclassbuilder`,
