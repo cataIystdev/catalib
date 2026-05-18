@@ -41,6 +41,19 @@ catalib init NAME [--id ID] [--dir DIR] [--author AUTHOR]
 | `--dir`, `-d` | `= ID` | каталог проекта |
 | `--author` | пусто | автор |
 
+## `catalib stubs`
+
+```
+catalib stubs [--dir DIR] [--force]
+```
+
+| Опция | По умолчанию | Назначение |
+|-------|--------------|------------|
+| `--dir`, `-d` | `typings` | каталог для `.pyi`-стабов SDK |
+| `--force` | выкл. | перезаписать существующие стабы |
+
+Подробнее — [Типизация и автодополнение](../guide/typing.md).
+
 ## `catalib version`
 
 Печатает версию catalib.

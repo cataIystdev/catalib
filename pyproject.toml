@@ -19,6 +19,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
+  "Typing :: Typed",
   "Environment :: Console",
   "Topic :: Software Development :: Build Tools",
   "Topic :: Software Development :: Code Generators",

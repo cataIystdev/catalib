@@ -7,6 +7,18 @@
 
 ## [Unreleased]
 
+### Добавлено
+
+- Типизация (PEP 561): маркер `catalib/py.typed` и классификатор
+  `Typing :: Typed` — аннотации `catalib.support` теперь видны
+  Pyright/Pylance/mypy без действий.
+- Поставка type-стабов публичного SDK exteraGram (`.pyi` для
+  `base_plugin`/`client_utils`/`file_utils`/`android_utils`/`hook_utils`/
+  `ui.settings`/`ui.alert`/`ui.bulletin`/`extera_utils.text_formatting`/
+  `extera_utils.classes`) и команда `catalib stubs [--dir] [--force]`,
+  устанавливающая их в `typings/` проекта (автодополнение прямого
+  доступа к SDK). См. ADR-0009.
+
 ## [0.3.1] - 2026-05-18
 
 ### Добавлено

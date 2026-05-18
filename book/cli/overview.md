@@ -11,6 +11,7 @@ catalib --help
 | [`catalib build`](build.md) | собрать модульный плагин в один файл |
 | [`catalib watch`](watch.md) | пересобирать при изменениях, опционально деплоить |
 | [`catalib init`](init.md) | создать шаблон модульного плагина |
+| `catalib stubs` | установить type-стабы SDK в `typings/` (см. [Типизация](../guide/typing.md)) |
 | `catalib version` | напечатать версию catalib |
 
 Запуск без аргументов показывает справку.

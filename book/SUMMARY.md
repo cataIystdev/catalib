@@ -18,6 +18,7 @@
 - [Настройки](guide/settings.md)
 - [Доступ к SDK](guide/sdk-access.md)
 - [Class proxy](guide/class-proxy.md)
+- [Типизация и автодополнение](guide/typing.md)
 - [Зависимости](guide/dependencies.md)
 
 ## CLI
