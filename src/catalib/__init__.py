@@ -21,7 +21,7 @@ from __future__ import annotations
 __all__ = ["__version__", "check_for_updates"]
 
 #: Версия пакета. Единый источник истины — синхронизирована с ``pyproject.toml``.
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 #: Имя пакета на PyPI и переменная окружения для отключения проверки.
 _PYPI_JSON_URL = "https://pypi.org/pypi/catalib/json"
