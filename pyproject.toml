@@ -25,14 +25,20 @@ classifiers = [
 ]
 dependencies = [
   "typer>=0.25,<1",
-  "watchfiles>=1.1,<2",
 ]
 
 [project.optional-dependencies]
+# watchfiles держит Rust-бэкенд: на телефоне (Termux/Pydroid) его сложно
+# собрать. Поэтому он опционален и нужен только команде `catalib watch`;
+# `build`/`init`/`version` работают без него. См. ADR-0005.
+watch = [
+  "watchfiles>=1.1,<2",
+]
 dev = [
   "pytest>=8.4",
   "pytest-cov>=6",
   "ruff>=0.9",
+  "watchfiles>=1.1,<2",
 ]
 publish = [
   "build>=1.2",
