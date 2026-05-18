@@ -9,6 +9,11 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.reflection` — обёртки `hook_utils`:
+  `find_class` (ре-экспорт), `get_private_field`, `set_private_field`,
+  `get_static_private_field`, `set_static_private_field`. Офлайн —
+  безопасный контракт (геттеры → `None`, сеттеры → `False`).
+  См. ADR-0007.
 - Модуль `catalib.support.files` — обёртки `file_utils`: 7 getter'ов
   каталогов (`get_plugins_dir`/`get_cache_dir`/…/`get_documents_dir`),
   `ensure_dir_exists`, `list_dir`, `write_file`, `read_file`,

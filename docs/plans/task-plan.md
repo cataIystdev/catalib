@@ -626,7 +626,7 @@
 - **Блокирует:** T-212.
 
 ### T-203: Модуль reflection (hook_utils)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `reflection.py`: `find_class` (ре-экспорт),
   `get_private_field`, `set_private_field`, `get_static_private_field`,
   `set_static_private_field`. Офлайн: геттеры → `None`, сеттеры → `False`.
