@@ -600,7 +600,7 @@
 - **Блокирует:** T-211, T-212.
 
 ### T-201: Модуль android (android_utils)
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `android.py`: `R`, `OnClickListener`, `OnLongClickListener`,
   `copy_to_clipboard`, ре-экспорт `log`, `run_on_ui_thread`. Безопасный
   импорт + офлайн-заглушки (listener-обёртки хранят и зовут callable;

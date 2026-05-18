@@ -9,6 +9,10 @@
 
 ### Добавлено
 
+- Модуль `catalib.support.android` — обёртки `android_utils`: `R`,
+  `OnClickListener`, `OnLongClickListener`, `copy_to_clipboard`,
+  ре-экспорт `log`/`run_on_ui_thread`. Офлайн-заглушки реально вызывают
+  переданный callable. См. ADR-0007.
 - Полный паритет встраиваемого слоя `catalib.support` со всем публичным
   SDK exteraGram (по официальной документации). Ядро `support.sdk`:
   `HookResult` со всеми полями SDK (`strategy`, `request`, `response`,
