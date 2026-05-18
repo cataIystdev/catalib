@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from catalib.support.hooks import HOOK_ATTR, HookSpec
+from catalib.support.hooks import APP_EVENT_ATTR, HOOK_ATTR, AppEventSpec, HookSpec
 from catalib.support.sdk import BasePlugin
 from catalib.support.settings import SettingItem
 
@@ -116,11 +116,14 @@ class CatalibPlugin(BasePlugin):
     _catalib_hooks: tuple[tuple[str, HookSpec], ...] = ()
     #: Собранные пункты меню: list[(имя_метода, MenuSpec)].
     _catalib_menu: tuple[tuple[str, MenuSpec], ...] = ()
+    #: Собранные обработчики событий приложения: list[(имя_метода, AppEventSpec)].
+    _catalib_app_events: tuple[tuple[str, AppEventSpec], ...] = ()
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         hooks: list[tuple[str, HookSpec]] = []
         menu: list[tuple[str, MenuSpec]] = []
+        app_events: list[tuple[str, AppEventSpec]] = []
         for attr_name in dir(cls):
             member = getattr(cls, attr_name, None)
             if not callable(member):
@@ -131,8 +134,12 @@ class CatalibPlugin(BasePlugin):
             menu_spec = getattr(member, MENU_ATTR, None)
             if isinstance(menu_spec, MenuSpec):
                 menu.append((attr_name, menu_spec))
+            app_event_spec = getattr(member, APP_EVENT_ATTR, None)
+            if isinstance(app_event_spec, AppEventSpec):
+                app_events.append((attr_name, app_event_spec))
         cls._catalib_hooks = tuple(sorted(hooks))
         cls._catalib_menu = tuple(sorted(menu))
+        cls._catalib_app_events = tuple(sorted(app_events, key=lambda pair: pair[0]))
 
     def on_plugin_load(self) -> None:
         """Зарегистрировать объявленные хуки и меню, затем вызвать on_load."""
@@ -144,6 +151,23 @@ class CatalibPlugin(BasePlugin):
         for attr_name, menu_spec in self._catalib_menu:
             self._register_menu_item(attr_name, menu_spec)
         self.on_load()
+
+    def on_app_event(self, event_type: Any) -> None:
+        """Диспетчер событий жизненного цикла приложения.
+
+        exteraGram вызывает этот метод при смене состояния приложения.
+        Вызывает все методы, помеченные ``@hook.app_event``, у которых
+        событие подходит (без указанных событий — на любое). Обработчику
+        передаётся ``event_type``.
+
+        Прямое переопределение ``on_app_event`` в подклассе по-прежнему
+        работает (поведение SDK не ограничивается). Если декораторы не
+        использовались, метод ничего не делает — это эквивалентно
+        отсутствию обработчика, как было до 0.2.0.
+        """
+        for attr_name, spec in self._catalib_app_events:
+            if not spec.events or event_type in spec.events:
+                getattr(self, attr_name)(event_type)
 
     def _register_send_message_hook(self, priority: int) -> None:
         """Зарегистрировать хук исходящих сообщений с приоритетом, если он поддержан."""
