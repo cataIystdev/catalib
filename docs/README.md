@@ -12,6 +12,8 @@
     - [ADR-0002: Bundler + sys.meta_path](architecture/decisions/ADR-0002-bundler-meta-path.md)
     - [ADR-0003: Мини-фреймворк поверх SDK](architecture/decisions/ADR-0003-mini-frejmvork-poverh-sdk.md)
     - [ADR-0004: Деплой через dev server](architecture/decisions/ADR-0004-deploy-cherez-dev-server.md)
+    - [ADR-0005: watchfiles — опциональная зависимость](architecture/decisions/ADR-0005-watchfiles-optional.md)
+    - [ADR-0006: Паритет support-слоя с SDK exteraGram](architecture/decisions/ADR-0006-paritet-support-sdk.md)
   - [Эмпирические данные](architecture/evidence/)
 - Планы
   - [Implementation Plan](plans/implementation-plan.md)

@@ -523,7 +523,7 @@
 - **Блокирует:** —
 
 ### T-106: Публичный API и документация support
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** дополнить `support/__init__.py` (`__all__`) новыми именами,
   сохранив прежние; синхронизировать `docs/components/support.md`,
   `docs/architecture/overview.md`, `docs/README.md`; завершить ADR-0005/0006.

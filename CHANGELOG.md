@@ -9,6 +9,11 @@
 
 ### Добавлено
 
+- Публичный API `catalib.support` дополнен новыми именами (`xposed`,
+  `AppEvent`, `HookFilter`, `hook_filters`, `MethodHook`,
+  `MethodReplacement`, `BaseHook`, `find_class`, `AppEventSpec`,
+  `XposedSpec`) с сохранением всех прежних. Обратная совместимость
+  поверхности закреплена тестом. См. ADR-0006.
 - `catalib.support.settings`: полный паритет с `ui.settings` exteraGram —
   компоненты `divider`, `selector`, `edit_text` (EditText), `custom` и
   расширенные параметры существующих (`switch`/`text_input`/`text`):
