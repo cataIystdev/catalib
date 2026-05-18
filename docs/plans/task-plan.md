@@ -720,7 +720,7 @@
 - **Блокирует:** T-212.
 
 ### T-210: Settings — довод до паритета
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** добавить `on_long_click` (Switch/Selector/Input/Text/
   Custom), `link_alias` (Selector), `create_sub_fragment`/`link_alias`
   (Custom); обёртка `simple_setting_factory(...)` (SimpleSettingFactory).

@@ -9,6 +9,12 @@
 
 ### Добавлено
 
+- `catalib.support.settings` доведён до полного паритета: параметр
+  `on_long_click` у `switch`/`selector`/`text_input`/`text`/`custom`,
+  `link_alias` у `selector`, `create_sub_fragment`/`link_alias` у
+  `custom`; добавлена обёртка `simple_setting_factory(...)`
+  (`ui.settings.SimpleSettingFactory`). Строго аддитивно — прежние
+  вызовы формируют тот же `params`. См. ADR-0007.
 - Модуль `catalib.support.classes` — FQN-константы общих Java-классов
   Telegram/Android (`CHAT_ACTIVITY`, `MESSAGE_OBJECT`, `TLRPC`, …) и
   словарь `COMMON_CLASSES`. Чистые данные, доступны всегда.

@@ -166,3 +166,68 @@ def test_all_kinds_have_sdk_class_mapping() -> None:
         "custom",
     }
     assert set(settings._SDK_CLASS_BY_KIND) == expected
+
+
+# --- Паритет 0.3.0: on_long_click, link_alias, SimpleSettingFactory ---
+
+
+def test_on_long_click_on_all_components() -> None:
+    cb = lambda *a: None  # noqa: E731 - заглушка обработчика
+    assert settings.switch("k", "t", on_long_click=cb).params["on_long_click"] is cb
+    assert (
+        settings.selector("k", "t", 0, ["a"], on_long_click=cb).params["on_long_click"]
+        is cb
+    )
+    assert (
+        settings.text_input("k", "t", on_long_click=cb).params["on_long_click"] is cb
+    )
+    assert settings.text("t", on_long_click=cb).params["on_long_click"] is cb
+    assert (
+        settings.custom(view=object(), on_long_click=cb).params["on_long_click"] is cb
+    )
+
+
+def test_selector_link_alias_and_omitted_by_default() -> None:
+    assert "link_alias" not in settings.selector("k", "t", 0, ["a"]).params
+    item = settings.selector("k", "t", 0, ["a"], link_alias="al")
+    assert item.params["link_alias"] == "al"
+
+
+def test_custom_sub_fragment_and_link_alias() -> None:
+    frag = lambda: []  # noqa: E731 - фабрика подэкрана
+    item = settings.custom(
+        view=object(), create_sub_fragment=frag, link_alias="x"
+    )
+    assert item.params["create_sub_fragment"] is frag
+    assert item.params["link_alias"] == "x"
+
+
+def test_legacy_calls_still_omit_new_params() -> None:
+    # Обратная совместимость: прежние вызовы не добавляют новых ключей.
+    assert settings.switch("k", "t").params == {
+        "key": "k",
+        "text": "t",
+        "default": False,
+    }
+    assert "on_long_click" not in settings.text("info").params
+    assert "link_alias" not in settings.selector("k", "t", 0, ["a"]).params
+
+
+def test_simple_setting_factory_offline() -> None:
+    cv = lambda *a: "view"  # noqa: E731 - офлайн create_view
+    bv = lambda *a: None  # noqa: E731 - офлайн bind_view
+    factory = settings.simple_setting_factory(
+        cv, bv, is_clickable=True, on_click=lambda *a: None
+    )
+    assert factory.kwargs["create_view"] is cv
+    assert factory.kwargs["bind_view"] is bv
+    assert factory.kwargs["is_clickable"] is True
+    assert "on_click" in factory.kwargs
+    # Фабрика вызываема: factory(link_alias=..., *args).
+    same = factory(1, 2, link_alias="al")
+    assert same is factory
+    assert factory.link_alias == "al"
+    assert factory.call_args == (1, 2)
+    # Пригодна как factory= в custom().
+    item = settings.custom(factory=factory)
+    assert item.params["factory"] is factory

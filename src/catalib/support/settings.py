@@ -91,6 +91,7 @@ def switch(
     *,
     icon: str = "",
     on_change: Callable[..., Any] | None = None,
+    on_long_click: Callable[..., Any] | None = None,
     link_alias: str = "",
 ) -> SettingItem:
     """Переключатель булевой настройки.
@@ -101,6 +102,7 @@ def switch(
     :param subtext: необязательная подпись под текстом.
     :param icon: необязательная иконка (drawable).
     :param on_change: необязательный обработчик изменения значения.
+    :param on_long_click: необязательный обработчик долгого нажатия.
     :param link_alias: необязательный алиас для ссылки на настройку.
     """
     params: dict[str, Any] = {"key": key, "text": text, "default": default}
@@ -110,6 +112,8 @@ def switch(
         params["icon"] = icon
     if on_change is not None:
         params["on_change"] = on_change
+    if on_long_click is not None:
+        params["on_long_click"] = on_long_click
     if link_alias:
         params["link_alias"] = link_alias
     return SettingItem("switch", params)
@@ -123,6 +127,8 @@ def selector(
     *,
     icon: str = "",
     on_change: Callable[..., Any] | None = None,
+    on_long_click: Callable[..., Any] | None = None,
+    link_alias: str = "",
 ) -> SettingItem:
     """Выпадающий список (выбор одного значения из набора).
 
@@ -132,6 +138,8 @@ def selector(
     :param items: непустой список подписей пунктов.
     :param icon: необязательная иконка (drawable).
     :param on_change: необязательный обработчик изменения значения.
+    :param on_long_click: необязательный обработчик долгого нажатия.
+    :param link_alias: необязательный алиас для ссылки на настройку.
     :raises ValueError: если ``items`` не является непустым списком строк.
     """
     if not isinstance(items, list) or not items:
@@ -148,6 +156,10 @@ def selector(
         params["icon"] = icon
     if on_change is not None:
         params["on_change"] = on_change
+    if on_long_click is not None:
+        params["on_long_click"] = on_long_click
+    if link_alias:
+        params["link_alias"] = link_alias
     return SettingItem("selector", params)
 
 
@@ -159,6 +171,7 @@ def text_input(
     icon: str = "",
     *,
     on_change: Callable[..., Any] | None = None,
+    on_long_click: Callable[..., Any] | None = None,
     link_alias: str = "",
 ) -> SettingItem:
     """Однострочное текстовое поле ввода (``ui.settings.Input``).
@@ -169,6 +182,7 @@ def text_input(
     :param subtext: необязательная подпись под текстом.
     :param icon: необязательная иконка (drawable).
     :param on_change: необязательный обработчик изменения значения.
+    :param on_long_click: необязательный обработчик долгого нажатия.
     :param link_alias: необязательный алиас для ссылки на настройку.
     """
     params: dict[str, Any] = {"key": key, "text": text, "default": default}
@@ -178,6 +192,8 @@ def text_input(
         params["icon"] = icon
     if on_change is not None:
         params["on_change"] = on_change
+    if on_long_click is not None:
+        params["on_long_click"] = on_long_click
     if link_alias:
         params["link_alias"] = link_alias
     return SettingItem("input", params)
@@ -225,6 +241,7 @@ def text(
     accent: bool = False,
     red: bool = False,
     on_click: Callable[..., Any] | None = None,
+    on_long_click: Callable[..., Any] | None = None,
     create_sub_fragment: Callable[..., Any] | None = None,
     link_alias: str = "",
 ) -> SettingItem:
@@ -239,6 +256,7 @@ def text(
     :param accent: выделить акцентным цветом.
     :param red: выделить красным (деструктивное действие).
     :param on_click: обработчик клика по строке.
+    :param on_long_click: необязательный обработчик долгого нажатия.
     :param create_sub_fragment: фабрика вложенного экрана настроек.
     :param link_alias: необязательный алиас для ссылки на настройку.
     """
@@ -253,6 +271,8 @@ def text(
         params["red"] = True
     if on_click is not None:
         params["on_click"] = on_click
+    if on_long_click is not None:
+        params["on_long_click"] = on_long_click
     if create_sub_fragment is not None:
         params["create_sub_fragment"] = create_sub_fragment
     if link_alias:
@@ -267,6 +287,9 @@ def custom(
     factory: Callable[..., Any] | None = None,
     factory_args: Any = None,
     on_click: Callable[..., Any] | None = None,
+    on_long_click: Callable[..., Any] | None = None,
+    create_sub_fragment: Callable[..., Any] | None = None,
+    link_alias: str = "",
 ) -> SettingItem:
     """Кастомная строка настроек (``ui.settings.Custom``).
 
@@ -274,9 +297,12 @@ def custom(
 
     :param item: готовый элемент строки.
     :param view: готовое Android-``View``.
-    :param factory: фабрика, создающая ``View``.
+    :param factory: фабрика, создающая ``View`` (см. :func:`simple_setting_factory`).
     :param factory_args: аргументы фабрики.
     :param on_click: необязательный обработчик клика.
+    :param on_long_click: необязательный обработчик долгого нажатия.
+    :param create_sub_fragment: фабрика вложенного экрана настроек.
+    :param link_alias: необязательный алиас для ссылки на настройку.
     :raises ValueError: если не задан ни ``item``, ни ``view``, ни ``factory``.
     """
     if item is None and view is None and factory is None:
@@ -292,4 +318,77 @@ def custom(
         params["factory_args"] = factory_args
     if on_click is not None:
         params["on_click"] = on_click
+    if on_long_click is not None:
+        params["on_long_click"] = on_long_click
+    if create_sub_fragment is not None:
+        params["create_sub_fragment"] = create_sub_fragment
+    if link_alias:
+        params["link_alias"] = link_alias
     return SettingItem("custom", params)
+
+
+def simple_setting_factory(
+    create_view: Callable[..., Any],
+    bind_view: Callable[..., Any],
+    *,
+    is_clickable: bool = False,
+    is_shadow: bool = False,
+    create_item: Callable[..., Any] | None = None,
+    on_click: Callable[..., Any] | None = None,
+    on_long_click: Callable[..., Any] | None = None,
+    attached_view: Callable[..., Any] | None = None,
+    equals: Callable[..., Any] | None = None,
+    content_equals: Callable[..., Any] | None = None,
+) -> Any:
+    """Построить ``ui.settings.SimpleSettingFactory`` для строки ``custom``.
+
+    На устройстве возвращается настоящий ``SimpleSettingFactory``; офлайн —
+    самодостаточный объект с теми же полями и вызываемый
+    (``factory(link_alias=..., *args)``), что удобно для модульных тестов.
+
+    :param create_view: ``create_view(context, list_view, current_account,
+        class_guid, resources_provider) -> View``.
+    :param bind_view: ``bind_view(view, item, divider, adapter, list_view)``.
+    :param is_clickable: строка кликабельна.
+    :param is_shadow: строка-тень (разделитель).
+    :param create_item: фабрика элемента строки.
+    :param on_click: ``on_click(plugin, item, view)``.
+    :param on_long_click: ``on_long_click(plugin, item, view) -> bool``.
+    :param attached_view: фабрика прикреплённого ``View``.
+    :param equals: сравнение элементов.
+    :param content_equals: сравнение содержимого элементов.
+    """
+    kwargs: dict[str, Any] = {
+        "create_view": create_view,
+        "bind_view": bind_view,
+        "is_clickable": is_clickable,
+        "is_shadow": is_shadow,
+    }
+    for name, value in (
+        ("create_item", create_item),
+        ("on_click", on_click),
+        ("on_long_click", on_long_click),
+        ("attached_view", attached_view),
+        ("equals", equals),
+        ("content_equals", content_equals),
+    ):
+        if value is not None:
+            kwargs[name] = value
+    try:  # pragma: no cover - выполняется только на устройстве
+        from ui.settings import SimpleSettingFactory as _SSF
+
+        return _SSF(**kwargs)
+    except Exception:
+        return _OfflineSettingFactory(kwargs)
+
+
+class _OfflineSettingFactory:
+    """Офлайн-двойник ``SimpleSettingFactory``: хранит поля и вызываем."""
+
+    def __init__(self, kwargs: dict[str, Any]) -> None:
+        self.kwargs = kwargs
+
+    def __call__(self, *args: Any, link_alias: str = "", **extra: Any) -> _OfflineSettingFactory:
+        self.link_alias = link_alias
+        self.call_args = args
+        return self
