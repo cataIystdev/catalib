@@ -19,20 +19,29 @@ HOOK_ATTR = "__catalib_hook__"
 APP_EVENT_ATTR = "__catalib_app_event__"
 
 
+#: Виды хуков, привязанных к фиксированным методам SDK по имени
+#: запроса/апдейта (диспетчеризуются :class:`CatalibPlugin`).
+REQUEST_HOOK_KINDS = ("pre_request", "post_request", "on_update", "on_updates")
+
+
 @dataclass(frozen=True, slots=True)
 class HookSpec:
     """Описание хука, привязанного к методу плагина.
 
-    :param kind: ``"send_message"`` для хука исходящих сообщений либо
-        ``"request"`` для хука сетевого запроса.
-    :param name: имя запроса для ``kind == "request"`` (например
-        ``"messages.sendMessage"``); для ``send_message`` — пусто.
+    :param kind: ``"send_message"`` — хук исходящих сообщений;
+        ``"request"`` — общая регистрация по имени запроса (как раньше);
+        ``"pre_request"``/``"post_request"``/``"on_update"``/
+        ``"on_updates"`` — конкретные хук-методы SDK с диспетчеризацией.
+    :param name: имя запроса/апдейта (для ``send_message`` — пусто).
     :param priority: приоритет регистрации хука.
+    :param match_substring: матчить ``name`` как подстроку (как в
+        ``add_hook(match_substring=True)``); по умолчанию ``False``.
     """
 
     kind: str
     name: str
     priority: int
+    match_substring: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +89,67 @@ class _Hook:
             return _mark(target, HookSpec(kind="request", name=name, priority=priority))
 
         return decorator
+
+    def _request_kind(
+        self, kind: str, name: str, priority: int, match_substring: bool
+    ) -> Callable[[Callable], Callable]:
+        """Общий конструктор декораторов хук-методов запроса/апдейта."""
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"имя для hook.{kind} должно быть непустой строкой")
+
+        def decorator(target: Callable) -> Callable:
+            return _mark(
+                target,
+                HookSpec(
+                    kind=kind,
+                    name=name,
+                    priority=priority,
+                    match_substring=match_substring,
+                ),
+            )
+
+        return decorator
+
+    def pre_request(
+        self, name: str, *, priority: int = 0, match_substring: bool = False
+    ) -> Callable[[Callable], Callable]:
+        """Пометить метод как хук ``pre_request_hook`` запроса ``name``.
+
+        Обработчик: ``handler(request_name, account, request) ->
+        HookResult | None``. catalib регистрирует ``add_hook(name)`` и
+        диспетчеризует вызов ``pre_request_hook`` в помеченный метод.
+        """
+        return self._request_kind("pre_request", name, priority, match_substring)
+
+    def post_request(
+        self, name: str, *, priority: int = 0, match_substring: bool = False
+    ) -> Callable[[Callable], Callable]:
+        """Пометить метод как хук ``post_request_hook`` запроса ``name``.
+
+        Обработчик: ``handler(request_name, account, response, error) ->
+        HookResult | None``.
+        """
+        return self._request_kind("post_request", name, priority, match_substring)
+
+    def on_update(
+        self, name: str, *, priority: int = 0, match_substring: bool = False
+    ) -> Callable[[Callable], Callable]:
+        """Пометить метод как хук ``on_update_hook`` апдейта ``name``.
+
+        Обработчик: ``handler(update_name, account, update) ->
+        HookResult | None``.
+        """
+        return self._request_kind("on_update", name, priority, match_substring)
+
+    def on_updates(
+        self, name: str, *, priority: int = 0, match_substring: bool = False
+    ) -> Callable[[Callable], Callable]:
+        """Пометить метод как хук ``on_updates_hook`` контейнера ``name``.
+
+        Обработчик: ``handler(container_name, account, updates) ->
+        HookResult | None``.
+        """
+        return self._request_kind("on_updates", name, priority, match_substring)
 
     def app_event(self, *events: Any) -> Callable:
         """Пометить метод как обработчик событий жизненного цикла приложения.

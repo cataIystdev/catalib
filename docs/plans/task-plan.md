@@ -733,7 +733,7 @@
 - **Блокирует:** T-212.
 
 ### T-211: Hooks — декларативная карта хук-методов
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `@hook.pre_request`/`@hook.post_request`/`@hook.on_update`/
   `@hook.on_updates(name=...,priority=...)` + регистрация в
   `CatalibPlugin.on_plugin_load` через `add_hook`. `hook.request`

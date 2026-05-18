@@ -12,7 +12,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from catalib.support.hooks import APP_EVENT_ATTR, HOOK_ATTR, AppEventSpec, HookSpec
+from catalib.support.hooks import (
+    APP_EVENT_ATTR,
+    HOOK_ATTR,
+    REQUEST_HOOK_KINDS,
+    AppEventSpec,
+    HookSpec,
+)
 from catalib.support.sdk import BasePlugin
 from catalib.support.settings import SettingItem
 from catalib.support.xposed import (
@@ -166,6 +172,8 @@ class CatalibPlugin(BasePlugin):
                 self._register_send_message_hook(spec.priority)
             elif spec.kind == "request":
                 self.add_hook(spec.name)
+            elif spec.kind in REQUEST_HOOK_KINDS:
+                self._register_request_hook(spec)
         for attr_name, menu_spec in self._catalib_menu:
             self._register_menu_item(attr_name, menu_spec)
         handles: list[Any] = []
@@ -205,6 +213,77 @@ class CatalibPlugin(BasePlugin):
         for attr_name, spec in self._catalib_app_events:
             if not spec.events or event_type in spec.events:
                 getattr(self, attr_name)(event_type)
+
+    def _register_request_hook(self, spec: HookSpec) -> None:
+        """Зарегистрировать имя запроса/апдейта через ``add_hook``.
+
+        SDK по этому имени будет вызывать фиксированные методы
+        ``pre_request_hook``/``post_request_hook``/``on_update_hook``/
+        ``on_updates_hook``; их реализуют диспетчеры ниже. Сигнатура
+        ``add_hook`` на старых сборках без ``match_substring``/``priority``
+        — graceful fallback.
+        """
+        try:
+            self.add_hook(
+                spec.name,
+                match_substring=spec.match_substring,
+                priority=spec.priority,
+            )
+        except TypeError:
+            self.add_hook(spec.name)
+
+    def _dispatch_request_hook(self, kind: str, name: str, *args: Any) -> Any:
+        """Вызвать помеченные ``@hook.<kind>`` обработчики по имени.
+
+        Совпадение по равенству имени либо по подстроке (если у спецификации
+        ``match_substring``). Возвращается первый не-``None`` результат
+        обработчика, иначе ``HookResult()`` (стратегия DEFAULT — поведение
+        не меняется, если обработчиков нет: эквивалентно их отсутствию до
+        0.3.0). Прямое переопределение метода-хука в подклассе по-прежнему
+        перекрывает диспетчер (MRO).
+        """
+        from catalib.support.sdk import HookResult
+
+        for attr_name, spec in self._catalib_hooks:
+            if spec.kind != kind:
+                continue
+            matched = (
+                spec.name in name if spec.match_substring else spec.name == name
+            )
+            if not matched:
+                continue
+            result = getattr(self, attr_name)(name, *args)
+            if result is not None:
+                return result
+        return HookResult()
+
+    def pre_request_hook(self, request_name: str, account: int, request: Any) -> Any:
+        """Диспетчер ``@hook.pre_request`` (см. :meth:`_dispatch_request_hook`)."""
+        return self._dispatch_request_hook(
+            "pre_request", request_name, account, request
+        )
+
+    def post_request_hook(
+        self, request_name: str, account: int, response: Any, error: Any
+    ) -> Any:
+        """Диспетчер ``@hook.post_request``."""
+        return self._dispatch_request_hook(
+            "post_request", request_name, account, response, error
+        )
+
+    def on_update_hook(self, update_name: str, account: int, update: Any) -> Any:
+        """Диспетчер ``@hook.on_update``."""
+        return self._dispatch_request_hook(
+            "on_update", update_name, account, update
+        )
+
+    def on_updates_hook(
+        self, container_name: str, account: int, updates: Any
+    ) -> Any:
+        """Диспетчер ``@hook.on_updates``."""
+        return self._dispatch_request_hook(
+            "on_updates", container_name, account, updates
+        )
 
     def _register_send_message_hook(self, priority: int) -> None:
         """Зарегистрировать хук исходящих сообщений с приоритетом, если он поддержан."""

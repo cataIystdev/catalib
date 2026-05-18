@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+- Декларативная карта хук-методов запроса/апдейта: декораторы
+  `@hook.pre_request`/`@hook.post_request`/`@hook.on_update`/
+  `@hook.on_updates(name, *, priority=, match_substring=)` и диспетчеры
+  `CatalibPlugin.pre_request_hook`/`post_request_hook`/`on_update_hook`/
+  `on_updates_hook` (авто-`add_hook`, маршрутизация по имени/подстроке,
+  возврат `HookResult`). `@hook.request` сохранён как прежде; прямое
+  переопределение хук-методов в подклассе по-прежнему перекрывает
+  диспетчер. См. ADR-0007.
 - `catalib.support.settings` доведён до полного паритета: параметр
   `on_long_click` у `switch`/`selector`/`text_input`/`text`/`custom`,
   `link_alias` у `selector`, `create_sub_fragment`/`link_alias` у
