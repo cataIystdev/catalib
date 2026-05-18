@@ -14,6 +14,7 @@
     - [ADR-0004: Деплой через dev server](architecture/decisions/ADR-0004-deploy-cherez-dev-server.md)
     - [ADR-0005: watchfiles — опциональная зависимость](architecture/decisions/ADR-0005-watchfiles-optional.md)
     - [ADR-0006: Паритет support-слоя с SDK exteraGram](architecture/decisions/ADR-0006-paritet-support-sdk.md)
+    - [ADR-0007: Полный паритет support со всем публичным SDK и декомпозиция на модули](architecture/decisions/ADR-0007-polnyj-paritet-sdk.md)
   - [Эмпирические данные](architecture/evidence/)
 - Планы
   - [Implementation Plan](plans/implementation-plan.md)

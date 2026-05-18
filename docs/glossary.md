@@ -31,3 +31,21 @@
   принимает JSON-команды (`write_plugin`, `reload_plugin`,
   `set_plugin_enabled`, `delete_plugin`). Штатный канал доставки плагина на
   устройство без root; используется модулем `deploy`.
+- **Class proxy** — управляемый DSL `extera_utils.classes` для создания
+  Java-подклассов из Python (`Base`, `@java_subclass`, `@joverride`,
+  `jfield`, `@jconstructor` и др.); обёртка — `support.proxy`.
+- **MVEL** — встроенный язык выражений; в class proxy используется в
+  `jMVELmethod`/`jMVELoverride` для тела метода на стороне Java.
+- **Bulletin** — нижнее всплывающее уведомление exteraGram
+  (`ui.bulletin.BulletinHelper`); обёртка — `support.bulletins`.
+- **AlertDialog** — модальный диалог поверх фрагмента
+  (`ui.alert.AlertDialogBuilder`); обёртка — `support.dialogs`.
+- **Контроллер** — компонент Telegram текущего аккаунта
+  (`MessagesController` и др.), получаемый геттерами `client_utils`;
+  обёртка — `support.client`.
+- **Очередь (DispatchQueue)** — именованная очередь exteraGram для работы
+  вне UI-потока (`PLUGINS_QUEUE` и др.); запуск — `run_on_queue`.
+- **Хук-метод** — фиксированный метод плагина, вызываемый движком по
+  имени запроса/апдейта (`pre_request_hook`/`post_request_hook`/
+  `on_update_hook`/`on_updates_hook`/`on_send_message_hook`); catalib
+  диспетчеризует их из декораторов `@hook.*`.

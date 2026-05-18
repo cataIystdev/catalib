@@ -43,7 +43,11 @@ exteraGram в один самодостаточный файл `<plugin_id>.py`,
 Движок импортирует `<plugin_id>`. Встроенный загрузчик регистрируется в
 `sys.meta_path` и лениво исполняет встроенные исходники под уникальным приватным
 префиксом, изолируя плагин от других. Подкласс `BasePlugin` доступен на верхнем
-уровне модуля; `support` предоставляет безопасные обёртки SDK.
+уровне модуля; `support` предоставляет безопасные обёртки **всего публичного
+SDK exteraGram** (14 модулей по областям: настройки, хуки, меню, Xposed,
+android/client/file/hook-utils, текст-форматирование, диалоги, bulletin'ы,
+class proxy, FQN-константы) — на устройстве настоящий SDK, офлайн —
+функциональные заглушки (ADR-0006, ADR-0007).
 
 ## Связи
 
@@ -53,4 +57,7 @@ exteraGram в один самодостаточный файл `<plugin_id>.py`,
   [ADR-0002](decisions/ADR-0002-bundler-meta-path.md),
   [ADR-0003](decisions/ADR-0003-mini-frejmvork-poverh-sdk.md),
   [ADR-0004](decisions/ADR-0004-deploy-cherez-dev-server.md),
+  [ADR-0005](decisions/ADR-0005-watchfiles-optional.md),
+  [ADR-0006](decisions/ADR-0006-paritet-support-sdk.md),
+  [ADR-0007](decisions/ADR-0007-polnyj-paritet-sdk.md),
   [Implementation Plan](../plans/implementation-plan.md).

@@ -782,7 +782,7 @@
 - **Блокирует:** T-217.
 
 ### T-215: Документация docs/ и ADR-0007
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** ADR-0007 (полный паритет + декомпозиция модулей);
   обновить `docs/components/support.md` (и при необходимости разбить),
   `docs/architecture/overview.md`, `docs/README.md`, `docs/glossary.md`
