@@ -141,3 +141,62 @@ def test_doctor_cli_fails_on_invalid_manifest(tmp_path: Path) -> None:
     result = runner.invoke(app, ["doctor", "--project", str(tmp_path)])
     assert result.exit_code == 1
     assert "критические проблемы" in result.output
+
+
+# --- Android-ветка (устройство: Termux/Pydroid) ---------------------------
+
+
+def _force_android(monkeypatch: pytest.MonkeyPatch, flavor: str = "termux") -> None:
+    import catalib.diagnostics as diag
+
+    monkeypatch.setattr(diag, "is_android", lambda: True)
+    monkeypatch.setattr(diag, "android_flavor", lambda: flavor)
+    label = {"termux": "Termux (Android)", "pydroid": "Pydroid 3 (Android)"}[flavor]
+    monkeypatch.setattr(diag, "describe_environment", lambda: label)
+
+
+def test_android_skips_adb_and_device_checks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _force_android(monkeypatch)
+    checks = run_diagnostics(tmp_path, devserver_client=_FakeClient(pong=True))
+    names = {c.name for c in checks}
+    assert "adb" not in names
+    assert "Устройство" not in names
+    assert _by_name(checks, "Среда").status == OK
+    assert "Termux" in _by_name(checks, "Среда").detail
+
+
+def test_android_devserver_direct_ok(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _force_android(monkeypatch)
+    checks = run_diagnostics(tmp_path, devserver_client=_FakeClient(pong=True))
+    ds = _by_name(checks, "Dev server")
+    assert ds.status == OK
+    assert "напрямую" in ds.detail
+
+
+def test_android_devserver_direct_unreachable_warns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _force_android(monkeypatch)
+    checks = run_diagnostics(tmp_path, devserver_client=_FakeClient(error="нет соединения"))
+    assert _by_name(checks, "Dev server").status == WARN
+    assert not has_failures(checks)  # нет dev server — не критично
+
+
+def test_android_pydroid_env_note(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _force_android(monkeypatch, flavor="pydroid")
+    checks = run_diagnostics(tmp_path, devserver_client=_FakeClient(pong=True))
+    env = _by_name(checks, "Среда")
+    assert env.status == OK
+    assert "subprocess" in env.detail
+
+
+def test_android_invalid_manifest_still_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _force_android(monkeypatch)
+    (tmp_path / "catalib.toml").write_text('[plugin]\nid = "X"\n', encoding="utf-8")
+    checks = run_diagnostics(tmp_path, devserver_client=_FakeClient(pong=True))
+    assert _by_name(checks, "Проект").status == FAIL
+    assert has_failures(checks)

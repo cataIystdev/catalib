@@ -1,9 +1,14 @@
 """Префлайт-диагностика окружения разработки плагинов.
 
-``catalib doctor`` проверяет, что машина готова к сборке и деплою:
-версия Python, наличие ``adb``, подключённое устройство, доступность dev
-server и валидность ``catalib.toml`` проекта. Каждая проверка возвращает
+``catalib doctor`` проверяет, что окружение готово к сборке и деплою:
+версия Python, среда (ПК или Android: Termux/Pydroid), доступность dev
+server, валидность ``catalib.toml``. Каждая проверка возвращает
 :class:`Check` со статусом ``ok``/``warn``/``fail``.
+
+На ПК dev server проверяется через временный ``adb forward`` (плюс
+проверки ``adb``/устройства). На самом устройстве (Android) ``adb`` не
+нужен — dev server проверяется напрямую (``127.0.0.1:<port>``), а вместо
+``adb``/устройства печатается среда. См. ADR-0011.
 
 Диагностика никогда не бросает исключений и не имеет побочных эффектов
 сверх временного ``adb forward`` (который сразу снимается) — это
@@ -26,6 +31,7 @@ from catalib.deploy.adb import AdbError, forward_dev_server, list_devices, remov
 from catalib.deploy.devserver import DevServerClient, DevServerError
 from catalib.manifest.loader import MANIFEST_FILENAME, load_manifest
 from catalib.manifest.model import ManifestError
+from catalib.platforms import PYDROID, android_flavor, describe_environment, is_android
 
 #: Проверка пройдена.
 OK = "ok"
@@ -71,6 +77,42 @@ def _check_python() -> Check:
 def _check_catalib() -> Check:
     """Версия самого catalib (всегда информационно ``ok``)."""
     return Check("catalib", OK, f"версия {__version__}")
+
+
+def _check_environment() -> Check:
+    """Среда запуска (ПК или Android: Termux/Pydroid). Информационно ``ok``."""
+    detail = describe_environment()
+    if android_flavor() == PYDROID:
+        # Pydroid — песочница: subprocess может быть урезан, поэтому
+        # диагностика устройства/логов на нём может деградировать.
+        detail += " — subprocess может быть урезан (logs/диагностика)"
+    return Check("Среда", OK, detail)
+
+
+def _check_devserver_direct(port: int, devserver_client: DevServerClient | None) -> Check:
+    """Прямое подключение к dev server на устройстве (без ``adb``).
+
+    На Android процесс уже на устройстве: dev server слушает
+    ``127.0.0.1:<port>``, ``adb forward`` не нужен (см. ADR-0011).
+    """
+    client = devserver_client or DevServerClient(port=port, timeout=5.0)
+    owns = devserver_client is None
+    try:
+        client.connect()
+        answered = client.ping()
+    except DevServerError as exc:
+        return Check(
+            "Dev server",
+            WARN,
+            f"недоступен напрямую: {exc}",
+            hint="запустите exteraGram и включите режим разработчика",
+        )
+    finally:
+        if owns:
+            client.close()
+    if answered:
+        return Check("Dev server", OK, f"доступен напрямую на 127.0.0.1:{port}")
+    return Check("Dev server", WARN, "не ответил на ping", hint="перезапустите exteraGram")
 
 
 def _check_adb_and_devices(
@@ -213,10 +255,14 @@ def run_diagnostics(
     :param device_lister: подмена ``list_devices`` (тесты).
     :param devserver_client: подмена клиента dev server (тесты).
     """
-    checks = [_check_python(), _check_catalib()]
-    adb_check, device_check, serials = _check_adb_and_devices(device_lister)
-    checks += [adb_check, device_check]
-    checks.append(_check_devserver(serials, serial, port, devserver_client))
+    checks = [_check_python(), _check_catalib(), _check_environment()]
+    if is_android():
+        # На устройстве adb нет и не нужен: dev server — напрямую.
+        checks.append(_check_devserver_direct(port, devserver_client))
+    else:
+        adb_check, device_check, serials = _check_adb_and_devices(device_lister)
+        checks += [adb_check, device_check]
+        checks.append(_check_devserver(serials, serial, port, devserver_client))
     checks.append(_check_project(project_dir))
     return checks
 
