@@ -11,6 +11,7 @@ from catalib.deploy.adb import AdbError, logcat
 from catalib.devicelogs import filter_log
 from catalib.manifest.loader import load_manifest
 from catalib.manifest.model import ManifestError
+from catalib.platforms import is_android
 
 
 def logs(
@@ -33,18 +34,35 @@ def logs(
         str | None,
         typer.Option("--filter", help="Фильтр-подстрока (по умолчанию plugin_id)"),
     ] = None,
+    adb: Annotated[
+        bool | None,
+        typer.Option(
+            "--adb/--no-adb",
+            help="Использовать adb (по умолчанию авто: на устройстве без adb)",
+        ),
+    ] = None,
 ) -> None:
     """Показать логи устройства, отфильтрованные по текущему плагину.
 
     По умолчанию фильтр — ``plugin_id`` из ``catalib.toml`` проекта
     (плагины логируют как ``[plugin_id] ...``). ``--filter`` задаёт свою
     подстроку, ``--all`` отключает фильтр. Поведение совпадает с
-    инструментом MCP ``adb_get_logs``.
+    инструментом MCP ``adb_get_logs``. На ПК читается через ``adb``, на
+    самом устройстве — системный ``logcat`` напрямую.
     """
     try:
-        text = logcat(lines, serial, clear=clear)
+        text = logcat(lines, serial, clear=clear, use_adb=adb)
     except AdbError as exc:
         typer.secho(f"Ошибка logs: {exc}", fg=typer.colors.RED, err=True)
+        if is_android():
+            typer.secho(
+                "На устройстве чужой (exteraGram) logcat требует разрешения "
+                "READ_LOGS — нужен root, Shizuku или adb-grant "
+                "(pm grant ... android.permission.READ_LOGS). Свои логи "
+                "приложение видит без него; иначе смотрите логи с ПК.",
+                fg=typer.colors.YELLOW,
+                err=True,
+            )
         raise typer.Exit(code=1) from exc
 
     if show_all:

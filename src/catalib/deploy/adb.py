@@ -11,6 +11,8 @@ import contextlib
 import shutil
 import subprocess
 
+from catalib.platforms import should_use_adb
+
 #: Порт dev server exteraGram по умолчанию.
 DEV_SERVER_PORT = 42690
 
@@ -30,15 +32,25 @@ def _adb_base(serial: str | None) -> list[str]:
 
 
 def _run(args: list[str]) -> str:
-    """Выполнить команду и вернуть stdout; при ошибке поднять AdbError."""
+    """Выполнить команду и вернуть stdout; при ошибке поднять AdbError.
+
+    Сообщения об ошибке используют имя самой команды (``args[0]``),
+    поэтому функция годится и для ``adb``, и для прямого ``logcat`` на
+    устройстве. ``OSError`` (например, запрет ``subprocess`` в песочнице
+    Pydroid) тоже оборачивается в :class:`AdbError` — инструмент должен
+    деградировать понятным сообщением, а не падать (см. ADR-0011).
+    """
+    tool = args[0]
     try:
         result = subprocess.run(args, capture_output=True, text=True, check=True)
     except FileNotFoundError as exc:
-        raise AdbError("adb не найден в PATH") from exc
+        raise AdbError(f"{tool} не найден в PATH") from exc
     except subprocess.CalledProcessError as exc:
         raise AdbError(
-            f"команда adb завершилась с ошибкой: {' '.join(args)}\n{exc.stderr.strip()}"
+            f"команда {tool} завершилась с ошибкой: {' '.join(args)}\n{exc.stderr.strip()}"
         ) from exc
+    except OSError as exc:
+        raise AdbError(f"{tool} недоступен: {exc}") from exc
     return result.stdout.strip()
 
 
@@ -71,19 +83,41 @@ def remove_forward(local_port: int, serial: str | None = None) -> None:
         _run([*_adb_base(serial), "forward", "--remove", f"tcp:{local_port}"])
 
 
-def logcat(lines: int = 100, serial: str | None = None, *, clear: bool = False) -> str:
-    """Прочитать последние ``lines`` строк logcat устройства.
+def _logcat_prefix(serial: str | None, use_adb: bool | None) -> list[str]:
+    """Базовая команда logcat: ``adb [-s ..] logcat`` либо прямой ``logcat``.
+
+    На самом устройстве (Android) ``adb`` нет — системный ``logcat``
+    вызывается напрямую (см. ADR-0011). На ПК — через ``adb``.
+    """
+    if should_use_adb(use_adb):
+        return [*_adb_base(serial), "logcat"]
+    return ["logcat"]
+
+
+def logcat(
+    lines: int = 100,
+    serial: str | None = None,
+    *,
+    clear: bool = False,
+    use_adb: bool | None = None,
+) -> str:
+    """Прочитать последние ``lines`` строк logcat.
 
     Команда совпадает с инструментом MCP ``adb_get_logs`` (единое
     поведение): ``logcat -d -t <lines>``; при ``clear`` сначала
-    ``logcat -c`` (ошибка очистки не фатальна).
+    ``logcat -c`` (ошибка очистки не фатальна). На ПК — через ``adb``,
+    на устройстве — системный ``logcat`` напрямую.
 
     :param lines: сколько последних строк вернуть.
-    :param serial: серийный номер устройства (если их несколько).
+    :param serial: серийный номер устройства (только для пути с ``adb``).
     :param clear: очистить буфер логов перед чтением.
-    :raises AdbError: если ``adb`` недоступен или устройство не отвечает.
+    :param use_adb: ``True``/``False`` явно; ``None`` — авто (на Android
+        напрямую без ``adb``).
+    :raises AdbError: если ``adb``/``logcat`` недоступен (в т. ч. запрет
+        ``subprocess``) или команда завершилась ошибкой.
     """
+    prefix = _logcat_prefix(serial, use_adb)
     if clear:
         with contextlib.suppress(AdbError):
-            _run([*_adb_base(serial), "logcat", "-c"])
-    return _run([*_adb_base(serial), "logcat", "-d", "-t", str(lines)])
+            _run([*prefix, "-c"])
+    return _run([*prefix, "-d", "-t", str(lines)])

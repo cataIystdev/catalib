@@ -22,6 +22,10 @@
   Android: Termux/Pydroid); на Android не проверяет `adb`/устройство, а
   dev server проверяет напрямую (`127.0.0.1`). На Pydroid отмечает, что
   `subprocess` может быть урезан.
+- `catalib logs` на устройстве читает системный `logcat` напрямую (без
+  `adb`); флаг `--adb/--no-adb` (по умолчанию авто). При отказе на
+  Android (нет `READ_LOGS`, запрещён `subprocess`) — понятная подсказка
+  (root/Shizuku/adb-grant), корректный код возврата.
 
 ### Изменено
 

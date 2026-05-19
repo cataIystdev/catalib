@@ -4,7 +4,7 @@
 Быстрый ответ на «что плагин пишет в лог».
 
 ```bash
-catalib logs [--project DIR] [--serial S] [--lines N] [--clear] [--all] [--filter TEXT]
+catalib logs [--project DIR] [--serial S] [--lines N] [--clear] [--all] [--filter TEXT] [--adb|--no-adb]
 ```
 
 ## Опции
@@ -17,10 +17,13 @@ catalib logs [--project DIR] [--serial S] [--lines N] [--clear] [--all] [--filte
 | `--clear` | выкл. | очистить буфер логов перед чтением |
 | `--all` | выкл. | не фильтровать — весь logcat |
 | `--filter` | `plugin_id` | своя подстрока фильтра вместо `plugin_id` |
+| `--adb` / `--no-adb` | авто | через `adb` или системный `logcat` напрямую |
 
 ## Поведение
 
-1. Читает `adb logcat -d -t <lines>` (при `--clear` сначала `logcat -c`).
+1. Читает `logcat -d -t <lines>` (при `--clear` сначала `logcat -c`). На
+   ПК — через `adb`; на самом устройстве (Termux/Pydroid) — системный
+   `logcat` напрямую (`adb` там не нужен; авто, override `--adb/--no-adb`).
 2. Фильтр-подстрока: `--filter` → её, иначе `plugin_id` из `catalib.toml`,
    при `--all` — без фильтра. Сравнение регистронезависимое (плагины
    логируют как `[plugin_id] ...`).
@@ -35,7 +38,7 @@ catalib logs [--project DIR] [--serial S] [--lines N] [--clear] [--all] [--filte
 | Код | Когда |
 |-----|-------|
 | `0` | логи получены (даже если по фильтру пусто) |
-| `1` | ошибка `adb` (нет `adb` в PATH, устройство не отвечает) |
+| `1` | ошибка `adb`/`logcat` (нет в PATH, устройство не отвечает, `subprocess` запрещён) |
 
 Нет валидного `catalib.toml` и не задан `--filter`/`--all` — выводится
 весь logcat с предупреждением в stderr (код `0`).
@@ -52,9 +55,20 @@ $ catalib logs --filter "Exception" # только строки с Exception
 $ catalib logs --clear -n 200       # очистить и смотреть «с чистого листа»
 ```
 
+## На самом устройстве (Termux/Pydroid)
+
+`logs` работает и на устройстве (системный `logcat` напрямую), но
+**чужой** logcat (то, что пишет exteraGram) Android отдаёт только с
+разрешением `READ_LOGS`. Без него обычное приложение Termux/Pydroid
+видит лишь свои строки. При отказе `logs` честно сообщает об этом и
+подсказывает варианты: root, Shizuku или единоразовый
+`pm grant ... android.permission.READ_LOGS` через adb-grant. На Pydroid
+вдобавок может быть запрещён `subprocess`. Подробнее —
+[Разработка на устройстве](../guide/android.md).
+
 ## Если логов нет
 
-В некоторых сборках exteraGram логи плагина не доходят до `adb logcat`.
+В некоторых сборках exteraGram логи плагина не доходят до `logcat`.
 Тогда пишите диагностику в файл в каталоге плагина (см.
 [Подводные камни](../troubleshooting.md)) и смотрите его через
 [`catalib`-доступ к файлам](../guide/sdk-access.md). Проверить готовность
