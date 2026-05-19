@@ -909,7 +909,7 @@
 - **Блокирует:** —
 
 ### T-305: Руководство «Разработка на устройстве»
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `book/guide/android.md` (Termux/Pydroid: установка,
   паритет, ограничения, logs-привилегии), SUMMARY, кросс-линки из
   cli/watch|doctor|logs и deployment.

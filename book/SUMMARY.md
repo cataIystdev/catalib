@@ -20,6 +20,7 @@
 - [Class proxy](guide/class-proxy.md)
 - [Типизация и автодополнение](guide/typing.md)
 - [Тестирование плагина](guide/testing.md)
+- [Разработка на устройстве (Termux/Pydroid)](guide/android.md)
 - [Зависимости](guide/dependencies.md)
 
 ## CLI
