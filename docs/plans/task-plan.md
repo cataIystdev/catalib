@@ -841,6 +841,95 @@
 
 ---
 
+## Раздел 13. Поддержка Android (Termux/Pydroid)
+
+Цель: полный паритет всех команд CLI при запуске на самом устройстве
+(Termux, Pydroid 3). Обоснование решений — ADR-0011.
+
+### T-300: Модуль детекта среды `catalib.platforms`
+- **Статус:** pending
+- **Описание:** `is_android()` (слоёный детект: `sys.platform` 3.13+
+  либо `ANDROID_ROOT`+`ANDROID_DATA` либо `/system`), `android_flavor()`
+  (`termux`/`pydroid`/`android`/пусто), `should_use_adb(explicit)`.
+  Чистый, без сайд-эффектов; тестируется подменой среды.
+- **Артефакты:** `src/catalib/platforms.py`,
+  `tests/unit/test_platforms.py`, ADR-0011, `CHANGELOG.md`.
+- **Критерий завершения:** матрица сред (linux/termux/pydroid/env)
+  покрыта тестами; ruff/pytest зелёные.
+- **Зависит от:** —
+- **Блокирует:** T-301, T-302, T-303, T-304.
+
+### T-301: Деплой без `adb` на устройстве
+- **Статус:** pending
+- **Описание:** `deploy_plugin(..., use_adb: bool | None=None)` — авто на
+  Android без adb: пропуск `forward`/`--remove`, прямое подключение к
+  `127.0.0.1:<port>`. Флаг `--adb/--no-adb` в `watch`.
+- **Артефакты:** `src/catalib/deploy/reload.py`, `cli/watch_command.py`,
+  тесты деплоя, `book/`, `CHANGELOG.md`.
+- **Критерий завершения:** путь no-adb не зовёт forward, подключается к
+  порту напрямую; тесты офлайн зелёные.
+- **Зависит от:** T-300.
+- **Блокирует:** T-303.
+
+### T-302: `watch` — stdlib polling-фолбэк
+- **Статус:** pending
+- **Описание:** `catalib.watching.iter_changes` выбирает бэкенд
+  (`watchfiles` или stdlib-поллинг по mtime/размеру). `watch` не падает
+  без `watchfiles`. Ревизия ADR-0005.
+- **Артефакты:** `src/catalib/watching.py`, `cli/watch_command.py`,
+  `tests/unit/test_watching.py`, ADR-0005 (поправка), `book/`,
+  `CHANGELOG.md`.
+- **Критерий завершения:** фолбэк отдаёт изменения; выбор бэкенда
+  тестируется подменой импорта; зелёные.
+- **Зависит от:** T-300.
+- **Блокирует:** —
+
+### T-303: `doctor` под Android
+- **Статус:** pending
+- **Описание:** на Android вместо adb/устройства — проверка среды
+  (Android + flavor) и dev server напрямую (`127.0.0.1:<port>`). `fail`
+  только Python/манифест.
+- **Артефакты:** `src/catalib/diagnostics.py`, `cli/doctor_command.py`,
+  `tests/unit/test_diagnostics.py`, `book/cli/doctor.md`, `CHANGELOG.md`.
+- **Критерий завершения:** android-ветка покрыта тестами; зелёные.
+- **Зависит от:** T-300, T-301.
+- **Блокирует:** —
+
+### T-304: `logs` под Android
+- **Статус:** pending
+- **Описание:** на Android системный `logcat` напрямую (без `adb`); при
+  отказе (`READ_LOGS`/урезанный subprocess) — понятное сообщение и
+  подсказки (Shizuku/adb-grant/root), корректный код возврата.
+- **Артефакты:** `src/catalib/deploy/adb.py` (`logcat`),
+  `cli/logs_command.py`, `tests/unit/test_devicelogs.py`,
+  `book/cli/logs.md`, `CHANGELOG.md`.
+- **Критерий завершения:** выбор `logcat` vs `adb logcat` по среде
+  покрыт тестами; подсказка при отказе; зелёные.
+- **Зависит от:** T-300.
+- **Блокирует:** —
+
+### T-305: Руководство «Разработка на устройстве»
+- **Статус:** pending
+- **Описание:** `book/guide/android.md` (Termux/Pydroid: установка,
+  паритет, ограничения, logs-привилегии), SUMMARY, кросс-линки из
+  cli/watch|doctor|logs и deployment.
+- **Артефакты:** `book/guide/android.md`, `book/SUMMARY.md`,
+  обновлённые страницы CLI, `CHANGELOG.md`.
+- **Критерий завершения:** страница в оглавлении; ссылки корректны.
+- **Зависит от:** T-301, T-302, T-303, T-304.
+- **Блокирует:** T-306.
+
+### T-306: Финальная проверка и релиз
+- **Статус:** pending
+- **Описание:** общий прогон ruff+pytest, сборка реального плагина
+  (регресс), при согласии — релиз 0.4.0.
+- **Артефакты:** —
+- **Критерий завершения:** всё зелёное, плагин собирается.
+- **Зависит от:** T-305.
+- **Блокирует:** —
+
+---
+
 ## Карта зависимостей
 
 ```mermaid
@@ -892,4 +981,8 @@ graph TD
   T212 --> T216 --> T217
   T213 --> T217
   T214 --> T217
+  T217 --> T300
+  T300 --> T301 & T302 & T303 & T304
+  T301 --> T303
+  T301 & T302 & T303 & T304 --> T305 --> T306
 ```

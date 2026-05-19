@@ -404,13 +404,36 @@ out = "dist"
   раздел «Связи».
 - `CHANGELOG.md` отражает все внешне заметные изменения.
 
+## 15a. Поддержка Android (Termux/Pydroid)
+
+CLI должен работать и на самом устройстве (Termux, Pydroid 3), где
+запущен exteraGram, с полным паритетом команд. Принятые решения и их
+обоснование — ADR-0011. Кратко:
+
+- Единый детект среды `catalib.platforms` (`is_android`,
+  `android_flavor`, `should_use_adb`); слоёный (sys.platform 3.13+ или
+  ANDROID_ROOT/ANDROID_DATA или `/system`).
+- Деплой на устройстве без `adb`: прямое подключение к
+  `127.0.0.1:42690` (dev server), без `adb forward`. Тристейт
+  `--adb/--no-adb`, по умолчанию авто.
+- `watch` без `watchfiles`: stdlib-поллинг-фолбэк (`catalib.watching`),
+  ревизия ADR-0005 (нет ошибки при отсутствии пакета).
+- `doctor` на устройстве: проверка среды + dev server напрямую вместо
+  adb/устройства.
+- `logs` на устройстве: системный `logcat` напрямую; при отказе
+  (`READ_LOGS`, урезанный `subprocess`) — понятная подсказка.
+- `build`/`init`/`stubs`/`version` уже не зависят от устройства.
+
+Деградация на Pydroid (урезанный `subprocess`) — сообщение, не падение.
+
 ## 16. Связи
 
 - Связанные ADR: ADR-0001 (модульный монолит), ADR-0002 (механизм bundler +
   meta_path), ADR-0003 (мини-фреймворк поверх SDK), ADR-0004 (деплой через
-  dev server), ADR-0005 (опциональная `watchfiles`), ADR-0006 (паритет
-  support-слоя с SDK exteraGram, 0.2.0), ADR-0007 (полный паритет support
-  со всем публичным SDK и декомпозиция на модули, 0.3.0).
+  dev server), ADR-0005 (опциональная `watchfiles`, ревизия в ADR-0011),
+  ADR-0006 (паритет support-слоя с SDK exteraGram, 0.2.0), ADR-0007
+  (полный паритет support со всем публичным SDK и декомпозиция на модули,
+  0.3.0), ADR-0011 (поддержка Android — Termux/Pydroid).
 - Связанные документы: `docs/architecture/overview.md`, `docs/plans/task-plan.md`,
   `docs/components/`.
 - Внешние ссылки: документация exteraGram `https://plugins.exteragram.app/docs`.
