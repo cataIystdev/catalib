@@ -5,6 +5,16 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 проект придерживается [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [Unreleased]
+
+### Добавлено
+
+- Поддержка запуска CLI на самом устройстве (Termux/Pydroid): деплой без
+  `adb` — на Android `catalib watch --deploy` подключается к dev server
+  напрямую (`127.0.0.1:42690`), без `adb forward`. Флаг
+  `catalib watch --adb/--no-adb` (по умолчанию авто: на устройстве без
+  `adb`). См. ADR-0011.
+
 ## [0.3.2] - 2026-05-18
 
 ### Добавлено

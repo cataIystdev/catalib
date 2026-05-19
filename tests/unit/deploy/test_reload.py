@@ -2,6 +2,7 @@
 
 import pytest
 
+from catalib.deploy import reload as reload_mod
 from catalib.deploy.devserver import DevServerError
 from catalib.deploy.reload import deploy_plugin
 
@@ -72,3 +73,43 @@ def test_injected_client_not_closed_by_deploy() -> None:
     client = FakeClient()
     deploy_plugin("demo", "x", client=client)
     assert "close" not in client.calls
+
+
+def _patch_forward(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Подменить adb-проброс и DevServerClient; вернуть журнал adb-вызовов."""
+    log: list[str] = []
+    monkeypatch.setattr(
+        reload_mod, "forward_dev_server", lambda port, serial: log.append(f"fwd:{port}")
+    )
+    monkeypatch.setattr(
+        reload_mod, "remove_forward", lambda port, serial: log.append(f"rm:{port}")
+    )
+    monkeypatch.setattr(reload_mod, "DevServerClient", lambda port=42690: FakeClient())
+    return log
+
+
+def test_no_adb_skips_forward(monkeypatch: pytest.MonkeyPatch) -> None:
+    log = _patch_forward(monkeypatch)
+    report = deploy_plugin("demo", "x", use_adb=False)
+    assert log == []  # на устройстве adb forward не вызывается
+    assert report.reloaded is True
+
+
+def test_adb_path_forwards_and_removes(monkeypatch: pytest.MonkeyPatch) -> None:
+    log = _patch_forward(monkeypatch)
+    deploy_plugin("demo", "x", local_port=42699, use_adb=True)
+    assert log == ["fwd:42699", "rm:42699"]
+
+
+def test_auto_consults_should_use_adb(monkeypatch: pytest.MonkeyPatch) -> None:
+    log = _patch_forward(monkeypatch)
+    seen: list[bool | None] = []
+
+    def fake_should(explicit: bool | None) -> bool:
+        seen.append(explicit)
+        return False  # имитируем устройство
+
+    monkeypatch.setattr(reload_mod, "should_use_adb", fake_should)
+    deploy_plugin("demo", "x")  # use_adb=None -> авто
+    assert seen == [None]
+    assert log == []  # авто-режим устройства: без forward

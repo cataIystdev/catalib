@@ -4,7 +4,7 @@
 опционально доставляет его на устройство.
 
 ```bash
-catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT]
+catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT] [--adb|--no-adb]
 ```
 
 ## Опции
@@ -14,7 +14,13 @@ catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT]
 | `--project`, `-p` | `.` | каталог проекта плагина |
 | `--deploy` | выкл. | деплоить на устройство после каждой сборки |
 | `--serial` | — | серийный номер устройства (если их несколько) |
-| `--port` | `42690` | локальный порт для `adb forward` |
+| `--port` | `42690` | порт dev server: локальный для `adb forward` либо прямой на устройстве |
+| `--adb` / `--no-adb` | авто | использовать ли `adb` для деплоя |
+
+`--adb/--no-adb` по умолчанию определяется автоматически: на ПК — через
+`adb forward`, на самом устройстве (Termux/Pydroid) — напрямую к
+`127.0.0.1:42690` без `adb` (его там нет и не нужно). Подробнее —
+[Разработка на устройстве](../guide/android.md).
 
 ## Поведение
 

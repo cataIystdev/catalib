@@ -40,7 +40,13 @@ def _load_watch() -> Callable[..., object]:
     return watch
 
 
-def _rebuild(project: Path, do_deploy: bool, serial: str | None, port: int) -> None:
+def _rebuild(
+    project: Path,
+    do_deploy: bool,
+    serial: str | None,
+    port: int,
+    use_adb: bool | None = None,
+) -> None:
     """Одна итерация пересборки (и опционально деплоя) с выводом статуса."""
     try:
         outcome = build_bundle(project, write=True)
@@ -59,6 +65,7 @@ def _rebuild(project: Path, do_deploy: bool, serial: str | None, port: int) -> N
             outcome.bundle.text,
             serial=serial,
             local_port=port,
+            use_adb=use_adb,
         )
     except DevServerError as exc:
         typer.secho(f"Деплой не удался: {exc}", fg=typer.colors.RED, err=True)
@@ -79,7 +86,20 @@ def watch_command(
     serial: Annotated[
         str | None, typer.Option("--serial", help="Серийный номер устройства")
     ] = None,
-    port: Annotated[int, typer.Option("--port", help="Локальный порт для adb forward")] = 42690,
+    port: Annotated[
+        int,
+        typer.Option(
+            "--port",
+            help="Порт dev server: локальный для adb forward либо прямой на устройстве",
+        ),
+    ] = 42690,
+    adb: Annotated[
+        bool | None,
+        typer.Option(
+            "--adb/--no-adb",
+            help="Использовать adb для деплоя (по умолчанию авто: на устройстве без adb)",
+        ),
+    ] = None,
 ) -> None:
     """Следить за исходниками и пересобирать плагин при изменениях."""
     watch = _load_watch()
@@ -93,9 +113,9 @@ def watch_command(
     src_dir = project / manifest.build.src
     manifest_path = project / "catalib.toml"
     typer.echo(f"Слежу за {src_dir} и {manifest_path}. Ctrl+C — выход.")
-    _rebuild(project, deploy, serial, port)
+    _rebuild(project, deploy, serial, port, adb)
     try:
         for _changes in watch(src_dir, manifest_path):
-            _rebuild(project, deploy, serial, port)
+            _rebuild(project, deploy, serial, port, adb)
     except KeyboardInterrupt:
         typer.echo("Остановлено.")
