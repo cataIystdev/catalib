@@ -38,3 +38,7 @@
   и `catalib stubs` (ADR-0009); `catalib doctor` (префлайт-диагностика);
   шаблоны `catalib init -t` и модуль `catalib.testing`; `catalib logs`;
   решение по `intents` подтверждено эмпирически (ADR-0010).
+- **0.3.3**: запуск CLI на самом устройстве (Termux/Pydroid) — деплой
+  без `adb` (прямой dev server), `watch` без `watchfiles`
+  (stdlib-поллинг), `doctor`/`logs` под Android, детект среды
+  `catalib.platforms` (ADR-0011).

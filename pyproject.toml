@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "catalib"
-version = "0.3.2"
+version = "0.3.3"
 description = "Инструмент сборки модульных плагинов для exteraGram в один файл"
 readme = "README.md"
 requires-python = ">=3.11"
