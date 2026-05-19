@@ -847,7 +847,7 @@
 (Termux, Pydroid 3). Обоснование решений — ADR-0011.
 
 ### T-300: Модуль детекта среды `catalib.platforms`
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `is_android()` (слоёный детект: `sys.platform` 3.13+
   либо `ANDROID_ROOT`+`ANDROID_DATA` либо `/system`), `android_flavor()`
   (`termux`/`pydroid`/`android`/пусто), `should_use_adb(explicit)`.
