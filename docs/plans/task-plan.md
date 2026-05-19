@@ -872,7 +872,7 @@
 - **Блокирует:** T-303.
 
 ### T-302: `watch` — stdlib polling-фолбэк
-- **Статус:** pending
+- **Статус:** done
 - **Описание:** `catalib.watching.iter_changes` выбирает бэкенд
   (`watchfiles` или stdlib-поллинг по mtime/размеру). `watch` не падает
   без `watchfiles`. Ревизия ADR-0005.

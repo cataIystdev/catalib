@@ -4,7 +4,7 @@
 опционально доставляет его на устройство.
 
 ```bash
-catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT] [--adb|--no-adb]
+catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT] [--adb|--no-adb] [--poll N]
 ```
 
 ## Опции
@@ -16,6 +16,7 @@ catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT] [--adb|
 | `--serial` | — | серийный номер устройства (если их несколько) |
 | `--port` | `42690` | порт dev server: локальный для `adb forward` либо прямой на устройстве |
 | `--adb` / `--no-adb` | авто | использовать ли `adb` для деплоя |
+| `--poll` | `1.0` | интервал поллинга в секундах (только без `watchfiles`) |
 
 `--adb/--no-adb` по умолчанию определяется автоматически: на ПК — через
 `adb forward`, на самом устройстве (Termux/Pydroid) — напрямую к
@@ -26,11 +27,18 @@ catalib watch [--project DIR] [--deploy] [--serial SERIAL] [--port PORT] [--adb|
 
 1. Загружает манифест (если невалиден — выходит с кодом `1`).
 2. Делает первую сборку.
-3. Следит за каталогом `src` и файлом `catalib.toml` (через `watchfiles`).
+3. Следит за каталогом `src` и файлом `catalib.toml`. Бэкенд слежения —
+   `watchfiles`, если установлен (мгновенный), иначе stdlib-поллинг с
+   интервалом `--poll` (по умолчанию 1 с). Команда работает **без**
+   `watchfiles` — это важно на телефоне (Termux/Pydroid), где Rust-
+   бэкенд не собрать; см. [Разработка на устройстве](../guide/android.md).
 4. На каждое изменение — пересобирает; при `--deploy` — доставляет на
    устройство (`write_plugin` + `reload_plugin`, и `set_plugin_enabled`
    при первом деплое).
 5. `Ctrl+C` — выход.
+
+Активный бэкенд печатается в первой строке (`бэкенд: watchfiles` или
+`бэкенд: polling`).
 
 ## Пример
 

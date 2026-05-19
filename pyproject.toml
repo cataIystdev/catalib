@@ -30,8 +30,9 @@ dependencies = [
 
 [project.optional-dependencies]
 # watchfiles держит Rust-бэкенд: на телефоне (Termux/Pydroid) его сложно
-# собрать. Поэтому он опционален и нужен только команде `catalib watch`;
-# `build`/`init`/`version` работают без него. См. ADR-0005.
+# собрать. Опционален и предпочтителен (мгновенный), но НЕ обязателен:
+# `catalib watch` без него падает на stdlib-поллинг. Остальные команды
+# его не требуют. См. ADR-0005 (ревизия в ADR-0011).
 watch = [
   "watchfiles>=1.1,<2",
 ]

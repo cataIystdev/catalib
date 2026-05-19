@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated
 
@@ -13,31 +12,7 @@ from catalib.deploy.devserver import DevServerError
 from catalib.deploy.reload import deploy_plugin
 from catalib.manifest.loader import load_manifest
 from catalib.manifest.model import ManifestError
-
-
-def _load_watch() -> Callable[..., object]:
-    """Лениво импортировать ``watchfiles.watch``.
-
-    ``watchfiles`` тянет Rust-бэкенд и потому вынесен в опциональную группу
-    зависимостей: команды ``build``/``init``/``version`` работают без него,
-    он нужен только ``watch``. Импорт отложен в тело команды, чтобы сам факт
-    отсутствия пакета не ломал CLI целиком. При отсутствии — понятная ошибка
-    с подсказкой по установке вместо голого ``ImportError``. См. ADR-0005.
-
-    :returns: функция ``watchfiles.watch``.
-    :raises typer.Exit: код 1, если пакет ``watchfiles`` не установлен.
-    """
-    try:
-        from watchfiles import watch
-    except ImportError as exc:
-        typer.secho(
-            'Команде "catalib watch" нужна опциональная зависимость watchfiles. '
-            'Установите её: pip install "catalib[watch]" (или pip install watchfiles).',
-            fg=typer.colors.RED,
-            err=True,
-        )
-        raise typer.Exit(code=1) from exc
-    return watch
+from catalib.watching import iter_changes, watching_backend
 
 
 def _rebuild(
@@ -100,9 +75,17 @@ def watch_command(
             help="Использовать adb для деплоя (по умолчанию авто: на устройстве без adb)",
         ),
     ] = None,
+    poll: Annotated[
+        float,
+        typer.Option("--poll", help="Интервал поллинга, с (только без watchfiles)"),
+    ] = 1.0,
 ) -> None:
-    """Следить за исходниками и пересобирать плагин при изменениях."""
-    watch = _load_watch()
+    """Следить за исходниками и пересобирать плагин при изменениях.
+
+    Слежение использует ``watchfiles`` (если установлен) либо stdlib-
+    поллинг — команда работает и без ``watchfiles`` (важно на Termux/
+    Pydroid, где Rust-бэкенд не собрать; см. ADR-0011).
+    """
     project = project.resolve()
     try:
         manifest = load_manifest(project)
@@ -112,10 +95,12 @@ def watch_command(
 
     src_dir = project / manifest.build.src
     manifest_path = project / "catalib.toml"
-    typer.echo(f"Слежу за {src_dir} и {manifest_path}. Ctrl+C — выход.")
+    typer.echo(
+        f"Слежу за {src_dir} и {manifest_path} (бэкенд: {watching_backend()}). Ctrl+C — выход."
+    )
     _rebuild(project, deploy, serial, port, adb)
     try:
-        for _changes in watch(src_dir, manifest_path):
+        for _changes in iter_changes(src_dir, manifest_path, poll_interval=poll):
             _rebuild(project, deploy, serial, port, adb)
     except KeyboardInterrupt:
         typer.echo("Остановлено.")

@@ -1,10 +1,9 @@
-"""Тесты опциональности зависимости ``watchfiles`` (см. ADR-0005).
+"""Тесты работы без ``watchfiles`` (см. ADR-0005, ревизия в ADR-0011).
 
-Требование: CLI ``catalib`` (команды ``build``/``init``/``version``) должен
-работать без установленного ``watchfiles`` — это важно для установки на
-телефоне (Termux/Pydroid), где Rust-бэкенд ``watchfiles`` собрать сложно.
-Сама команда ``watch`` подключает пакет лениво и при его отсутствии даёт
-понятную ошибку, а не голый ``ImportError`` на старте CLI.
+Требование: CLI ``catalib`` (``build``/``init``/``version``) работает без
+``watchfiles`` — важно на телефоне (Termux/Pydroid), где Rust-бэкенд не
+собрать. Сама команда ``watch`` при отсутствии пакета **не падает**, а
+переключается на stdlib-поллинг.
 """
 
 from __future__ import annotations
@@ -15,11 +14,9 @@ import sys
 from pathlib import Path
 
 import pytest
-import typer
 from typer.testing import CliRunner
 
-from catalib import __version__
-from catalib.cli import watch_command as wc
+from catalib import __version__, watching
 from catalib.cli.app import app
 
 #: Корень репозитория (для запуска изолированного интерпретатора с src в пути).
@@ -31,9 +28,8 @@ runner = CliRunner()
 def _block_watchfiles(monkeypatch: pytest.MonkeyPatch) -> None:
     """Сымитировать отсутствие пакета ``watchfiles``.
 
-    ``None`` в ``sys.modules`` заставляет ``from watchfiles import watch``
-    немедленно поднять ``ImportError``, не доходя до настоящего пакета.
-    monkeypatch восстанавливает ``sys.modules`` после теста.
+    ``None`` в ``sys.modules`` заставляет ``import watchfiles`` немедленно
+    поднять ``ImportError``; monkeypatch восстанавливает состояние.
     """
     monkeypatch.setitem(sys.modules, "watchfiles", None)
 
@@ -41,11 +37,9 @@ def _block_watchfiles(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_cli_imports_in_clean_interpreter_without_watchfiles() -> None:
     """В чистом интерпретаторе без ``watchfiles`` CLI импортируется и работает.
 
-    Инвариант требования #1: импорт ``watchfiles`` отложен в тело команды
-    ``watch``, поэтому импорт ``catalib.cli.app`` и команда ``version`` не
-    должны его требовать. Проверяется в отдельном процессе (без влияния
-    кеша импортов тестовой сессии): ``watchfiles`` заблокирован до импорта
-    catalib; любой ранний импорт пакета упал бы с ``ImportError``.
+    Импорт ``watchfiles`` отложен в бэкенд слежения, поэтому импорт
+    ``catalib.cli.app`` и команда ``version`` его не требуют. Проверяется
+    в отдельном процессе: ``watchfiles`` заблокирован до импорта catalib.
     """
     script = (
         "import sys; sys.modules['watchfiles'] = None;"
@@ -76,40 +70,38 @@ def test_version_works_without_watchfiles(monkeypatch: pytest.MonkeyPatch) -> No
     assert __version__ in result.stdout
 
 
-def test_build_works_without_watchfiles(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+def test_build_works_without_watchfiles(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _block_watchfiles(monkeypatch)
     proj = tmp_path / "proj"
-    init_result = runner.invoke(
-        app, ["init", "Demo", "--id", "demo_nowatch", "--dir", str(proj)]
-    )
+    init_result = runner.invoke(app, ["init", "Demo", "--id", "demo_nowatch", "--dir", str(proj)])
     assert init_result.exit_code == 0, init_result.stdout
     build_result = runner.invoke(app, ["build", "--project", str(proj)])
     assert build_result.exit_code == 0, build_result.stdout
     assert (proj / "dist" / "demo_nowatch.py").is_file()
 
 
-def test_watch_without_watchfiles_gives_clear_error(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
-    _block_watchfiles(monkeypatch)
-    result = runner.invoke(app, ["watch", "--project", str(tmp_path)])
-    assert result.exit_code == 1
-    assert "watchfiles" in result.stderr
-    assert "catalib[watch]" in result.stderr
-
-
-def test_load_watch_raises_typer_exit_when_missing(
+def test_backend_is_polling_without_watchfiles(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _block_watchfiles(monkeypatch)
-    with pytest.raises(typer.Exit) as exc_info:
-        wc._load_watch()
-    assert exc_info.value.exit_code == 1
+    assert watching._has_watchfiles() is False
+    assert watching.watching_backend() == "polling"
 
 
-def test_load_watch_returns_callable_when_available() -> None:
-    """В dev-окружении ``watchfiles`` установлен — функция доступна."""
-    watch = wc._load_watch()
-    assert callable(watch)
+def test_watch_without_watchfiles_does_not_error_about_watchfiles(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Без ``watchfiles`` ``watch`` не жалуется на него (фолбэк на поллинг).
+
+    Каталог без ``catalib.toml`` — команда доходит до загрузки манифеста
+    (это уже за бывшим watchfiles-гейтом) и падает на манифесте, а не на
+    ``watchfiles``.
+    """
+    _block_watchfiles(monkeypatch)
+    result = runner.invoke(app, ["watch", "--project", str(tmp_path)])
+    assert result.exit_code == 1
+    # Прежний гейт-месседж исчез (проверяем конкретную фразу, а не голую
+    # подстроку "watchfiles" — она встречается в пути tmp_path).
+    assert "опциональная зависимость watchfiles" not in result.stderr
+    assert "catalib[watch]" not in result.stderr
+    assert "манифест" in result.stderr
